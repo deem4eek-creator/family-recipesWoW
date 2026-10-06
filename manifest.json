@@ -1,0 +1,17 @@
+{
+  "name": "Семейные рецепты",
+  "short_name": "Рецепты",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdf6e3",
+  "theme_color": "#7a4a1f",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
