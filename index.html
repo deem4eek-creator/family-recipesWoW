@@ -1,1824 +1,1927 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7a4a1f">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Рецепты">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <title>Семейные рецепты</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Nunito', system-ui, sans-serif; max-width: 700px; margin: 0 auto; padding: 16px;
-      min-height: 100vh;
-      transition: background 0.6s ease;
-      background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%);
-      background-attachment: fixed;
-    }
-    /* Лёгкая текстура бумаги на фоне */
-    body::before {
-      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      opacity: 0.55;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
-    }
-    h1, h2, h3, h4 { font-family: 'Comfortaa', 'Nunito', sans-serif; }
+<title>Семейные рецепты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+font-family: 'Nunito', system-ui, sans-serif; max-width: 700px; margin: 0 auto; padding: 16px;
+min-height: 100vh;
+transition: background 0.6s ease;
+background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%);
+background-attachment: fixed;
+}
+/* Лёгкая текстура бумаги на фоне */
+body::before {
+content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+opacity: 0.55;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+h1, h2, h3, h4 { font-family: 'Comfortaa', 'Nunito', sans-serif; }
 
-    body.large-font { font-size: 118%; }
-    body.large-font .card { font-size: 1.15em; }
-    body.large-font input, body.large-font textarea, body.large-font select, body.large-font button { font-size: 20px; }
-    body.large-font .category-badge, body.large-font .fav-badge, body.large-font .cooked-badge { font-size: 0.95em; }
-    body.large-font .ingredients-list { font-size: 1.05em; }
-    body.large-font h3 { font-size: 1.5em; }
-    body.large-font h1 { font-size: 1.9em; }
+body.large-font { font-size: 118%; }
+body.large-font .card { font-size: 1.15em; }
+body.large-font input, body.large-font textarea, body.large-font select, body.large-font button { font-size: 20px; }
+body.large-font .category-badge, body.large-font .fav-badge, body.large-font .cooked-badge { font-size: 0.95em; }
+body.large-font .ingredients-list { font-size: 1.05em; }
+body.large-font h3 { font-size: 1.5em; }
+body.large-font h1 { font-size: 1.9em; }
 
-    .bg-all     { background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%) !important; }
-    .bg-wishlist{ background: linear-gradient(160deg, #ffecd2 0%, #fcb69f 60%, #f78ca0 100%) !important; }
-    .bg-soup    { background: linear-gradient(160deg, #2c5364 0%, #6dd5ed 100%) !important; }
-    .bg-salad   { background: linear-gradient(160deg, #56ab2f 0%, #a8e063 100%) !important; }
-    .bg-dessert { background: linear-gradient(160deg, #ee9ca7 0%, #ffdde1 100%) !important; }
-    .bg-cold-snack { background: linear-gradient(160deg, #f6d365 0%, #fda085 100%) !important; }
-    .bg-hot-snack  { background: linear-gradient(160deg, #ff9966 0%, #ff5e62 100%) !important; }
-    .bg-sweet-pastry { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%) !important; }
-    .bg-savory-pastry  { background: linear-gradient(160deg, #603813 0%, #b29f94 100%) !important; }
-    .bg-main    { background: linear-gradient(160deg, #2193b0 0%, #6dd5ed 100%) !important; }
-    .bg-side    { background: linear-gradient(160deg, #e8d8a0 0%, #d4a857 100%) !important; }
+.bg-all { background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%) !important; }
+.bg-wishlist{ background: linear-gradient(160deg, #ffecd2 0%, #fcb69f 60%, #f78ca0 100%) !important; }
+.bg-soup { background: linear-gradient(160deg, #2c5364 0%, #6dd5ed 100%) !important; }
+.bg-salad { background: linear-gradient(160deg, #56ab2f 0%, #a8e063 100%) !important; }
+.bg-dessert { background: linear-gradient(160deg, #ee9ca7 0%, #ffdde1 100%) !important; }
+.bg-cold-snack { background: linear-gradient(160deg, #f6d365 0%, #fda085 100%) !important; }
+.bg-hot-snack { background: linear-gradient(160deg, #ff9966 0%, #ff5e62 100%) !important; }
+.bg-sweet-pastry { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%) !important; }
+.bg-savory-pastry { background: linear-gradient(160deg, #603813 0%, #b29f94 100%) !important; }
+.bg-main { background: linear-gradient(160deg, #2193b0 0%, #6dd5ed 100%) !important; }
+.bg-side { background: linear-gradient(160deg, #e8d8a0 0%, #d4a857 100%) !important; }
 
-    /* Декоративная «кухонная» шапка */
-    .kitchen-banner {
-      background: linear-gradient(180deg, #fffaf0 0%, #fdf3e0 100%);
-      border: 1px solid rgba(122,74,31,0.15);
-      border-radius: 14px;
-      padding: 16px 16px 14px;
-      margin-bottom: 10px;
-      text-align: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
-      position: relative; z-index: 1;
-    }
-    .pot-line { position: relative; font-size: 2.2em; line-height: 1; display: inline-block; }
-    .steam {
-      position: absolute; left: 50%; top: -8px;
-      width: 13px; height: 13px; border-radius: 50%;
-      background: rgba(255,255,255,0.9);
-      filter: blur(5px);
-      opacity: 0;
-      animation: steamRise 3.4s ease-in infinite;
-      pointer-events: none;
-    }
-    .steam.s2 { margin-left: -20px; animation-delay: 1.1s; }
-    .steam.s3 { margin-left: 18px; animation-delay: 2.2s; }
-    @keyframes steamRise {
-      0%   { transform: translateY(0) scale(0.5); opacity: 0; }
-      25%  { opacity: 0.75; }
-      100% { transform: translateY(-52px) scale(1.7); opacity: 0; }
-    }
-    .kitchen-banner h1 { margin: 0; color: #7a4a1f; font-size: 1.7em; font-weight: 700; }
-    .banner-note {
-      font-family: 'Comfortaa', sans-serif;
-      color: #a07848; font-size: 0.85em; margin-top: 4px; letter-spacing: 0.06em;
-    }
-    .gingham {
-      height: 9px; margin-top: 12px; border-radius: 5px; opacity: 0.5;
-      background: repeating-linear-gradient(90deg, #d9534f 0 10px, transparent 10px 20px),
-                  repeating-linear-gradient(90deg, transparent 0 5px, #f6e0b5 5px 15px);
-      background-color: #fdf6e3;
-    }
-    .header-actions-row {
-      display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
-    }
-    .header-actions-row button { min-height: 42px; min-width: 42px; padding: 6px 12px; margin: 0; }
+/* Декоративная «кухонная» шапка */
+.kitchen-banner {
+background: linear-gradient(180deg, #fffaf0 0%, #fdf3e0 100%);
+border: 1px solid rgba(122,74,31,0.15);
+border-radius: 14px;
+padding: 16px 16px 14px;
+margin-bottom: 10px;
+text-align: center;
+box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+position: relative; z-index: 1;
+}
+.pot-line { position: relative; font-size: 2.2em; line-height: 1; display: inline-block; }
+.steam {
+position: absolute; left: 50%; top: -8px;
+width: 13px; height: 13px; border-radius: 50%;
+background: rgba(255,255,255,0.9);
+filter: blur(5px);
+opacity: 0;
+animation: steamRise 3.4s ease-in infinite;
+pointer-events: none;
+}
+.steam.s2 { margin-left: -20px; animation-delay: 1.1s; }
+.steam.s3 { margin-left: 18px; animation-delay: 2.2s; }
+@keyframes steamRise {
+0% { transform: translateY(0) scale(0.5); opacity: 0; }
+25% { opacity: 0.75; }
+100% { transform: translateY(-52px) scale(1.7); opacity: 0; }
+}
+.kitchen-banner h1 { margin: 0; color: #7a4a1f; font-size: 1.7em; font-weight: 700; }
+.banner-note {
+font-family: 'Comfortaa', sans-serif;
+color: #a07848; font-size: 0.85em; margin-top: 4px; letter-spacing: 0.06em;
+}
+.gingham {
+height: 9px; margin-top: 12px; border-radius: 5px; opacity: 0.5;
+background: repeating-linear-gradient(90deg, #d9534f 0 10px, transparent 10px 20px),
+repeating-linear-gradient(90deg, transparent 0 5px, #f6e0b5 5px 15px);
+background-color: #fdf6e3;
+}
+.header-actions-row {
+display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+}
+.header-actions-row button { min-height: 42px; min-width: 42px; padding: 6px 12px; margin: 0; }
 
-    .card {
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 12px; padding: 16px; margin-bottom: 16px;
-      background: rgba(255,255,255,0.94);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      transition: background 0.3s ease, border 0.3s ease, transform 0.25s ease, box-shadow 0.25s ease;
-      cursor: pointer;
-      position: relative; z-index: 1;
-    }
-    .card.recipe-card { animation: fadeUp 0.45s ease both; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @media (hover: hover) {
-      .card.recipe-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
-    }
-    .card.cooked { background: #eafaf1; border: 1px solid #2ecc71; }
-    .cooked-badge {
-      display: inline-block; padding: 3px 10px; border-radius: 4px;
-      font-size: 0.8em; font-weight: 700; color: #1e7e45;
-      background: #d1f2e0; margin-left: 8px; vertical-align: middle;
-    }
-    .fav-badge {
-      display: inline-block; padding: 3px 10px; border-radius: 4px;
-      font-size: 0.8em; font-weight: 700; color: #9a6b00;
-      background: #fff3c4; margin-left: 4px; vertical-align: middle;
-    }
+.card {
+border: 1px solid rgba(0,0,0,0.08);
+border-radius: 12px; padding: 16px; margin-bottom: 16px;
+background: rgba(255,255,255,0.94);
+box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+transition: background 0.3s ease, border 0.3s ease, transform 0.25s ease, box-shadow 0.25s ease;
+cursor: pointer;
+position: relative; z-index: 1;
+}
+.card.recipe-card { animation: fadeUp 0.45s ease both; }
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(16px); }
+to { opacity: 1; transform: translateY(0); }
+}
+@media (hover: hover) {
+.card.recipe-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
+}
+.card.cooked { background: #eafaf1; border: 1px solid #2ecc71; }
+.cooked-badge {
+display: inline-block; padding: 3px 10px; border-radius: 4px;
+font-size: 0.8em; font-weight: 700; color: #1e7e45;
+background: #d1f2e0; margin-left: 8px; vertical-align: middle;
+}
+.fav-badge {
+display: inline-block; padding: 3px 10px; border-radius: 4px;
+font-size: 0.8em; font-weight: 700; color: #9a6b00;
+background: #fff3c4; margin-left: 4px; vertical-align: middle;
+}
 
-    /* Пустые состояния с душой */
-    .empty-state {
-      text-align: center; padding: 30px 16px;
-      background: rgba(255,255,255,0.88);
-      border: 1px dashed #d9c9a8; border-radius: 12px;
-      color: #7a4a1f;
-    }
-    .empty-state .es-icon { font-size: 2.8em; line-height: 1; }
-    .empty-state p { margin: 10px 0 0; font-size: 1.05em; }
+/* Пустые состояния с душой */
+.empty-state {
+text-align: center; padding: 30px 16px;
+background: rgba(255,255,255,0.88);
+border: 1px dashed #d9c9a8; border-radius: 12px;
+color: #7a4a1f;
+}
+.empty-state .es-icon { font-size: 2.8em; line-height: 1; }
+.empty-state p { margin: 10px 0 0; font-size: 1.05em; }
 
-    /* Карточка-«полароид» */
-    .polaroid {
-      background: #fff; padding: 10px 10px 30px;
-      box-shadow: 0 5px 14px rgba(0,0,0,0.18);
-      transform: rotate(-1.5deg);
-      border-radius: 4px;
-      margin: 14px auto 8px;
-      width: fit-content; max-width: 100%;
-      transition: transform 0.3s ease;
-    }
-    .polaroid:hover { transform: rotate(0deg) scale(1.02); }
-    .polaroid img { margin-top: 0; border-radius: 0; box-shadow: none; }
-    .polaroid-caption {
-      font-family: 'Comfortaa', sans-serif; font-size: 0.78em; color: #8a7a66;
-      text-align: center; margin-top: 8px;
-    }
+/* Карточка-«полароид» */
+.polaroid {
+background: #fff; padding: 10px 10px 30px;
+box-shadow: 0 5px 14px rgba(0,0,0,0.18);
+transform: rotate(-1.5deg);
+border-radius: 4px;
+margin: 14px auto 8px;
+width: fit-content; max-width: 100%;
+transition: transform 0.3s ease;
+}
+.polaroid:hover { transform: rotate(0deg) scale(1.02); }
+.polaroid img { margin-top: 0; border-radius: 0; box-shadow: none; }
+.polaroid-caption {
+font-family: 'Comfortaa', sans-serif; font-size: 0.78em; color: #8a7a66;
+text-align: center; margin-top: 8px;
+}
 
-    input, textarea, select, button { padding: 10px 12px; display: block; width: 100%; margin-bottom: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 16px; }
-    button {
-      background: #4a90e2; color: white; border: none; border-radius: 8px;
-      cursor: pointer; font-weight: 600;
-      min-height: 46px; font-size: 16px;
-    }
-    button:hover { background: #357abd; }
-    button.delete-btn { background: #d9534f; }
-    button.delete-btn:hover { background: #c9302c; }
-    button.edit-btn { background: #f39c12; }
-    button.edit-btn:hover { background: #d68910; }
-    button.done-btn { background: #2ecc71; }
-    button.done-btn:hover { background: #27ae60; }
-    button.logout-btn { background: #37474f; width: auto; }
-    button.ghost-btn { background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd; }
-    button.ghost-btn:hover { background: #f0f0f0; }
-    button.tts-active { background: #d9534f; }
+input, textarea, select, button { padding: 10px 12px; display: block; width: 100%; margin-bottom: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 16px; }
+button {
+background: #4a90e2; color: white; border: none; border-radius: 8px;
+cursor: pointer; font-weight: 600;
+min-height: 46px; font-size: 16px;
+}
+button:hover { background: #357abd; }
+button.delete-btn { background: #d9534f; }
+button.delete-btn:hover { background: #c9302c; }
+button.edit-btn { background: #f39c12; }
+button.edit-btn:hover { background: #d68910; }
+button.done-btn { background: #2ecc71; }
+button.done-btn:hover { background: #27ae60; }
+button.logout-btn { background: #37474f; width: auto; }
+button.ghost-btn { background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd; }
+button.ghost-btn:hover { background: #f0f0f0; }
+button.tts-active { background: #d9534f; }
 
-    .icon-btn {
-      width: 56px; min-width: 56px; height: 46px; padding: 0;
-      font-size: 24px; line-height: 1; margin-bottom: 0;
-      background: rgba(255,255,255,0.95); color: #aaa;
-      border: 1px solid #ddd;
-    }
-    .icon-btn:hover { background: #f0f0f0; }
-    .icon-btn.fav-active { color: #f39c12; border-color: #f39c12; background: #fff7e0; }
-    .icon-btn.cooked-active { color: #27ae60; border-color: #27ae60; background: #eafaf1; }
+.icon-btn {
+width: 56px; min-width: 56px; height: 46px; padding: 0;
+font-size: 24px; line-height: 1; margin-bottom: 0;
+background: rgba(255,255,255,0.95); color: #aaa;
+border: 1px solid #ddd;
+}
+.icon-btn:hover { background: #f0f0f0; }
+.icon-btn.fav-active { color: #f39c12; border-color: #f39c12; background: #fff7e0; }
+.icon-btn.cooked-active { color: #27ae60; border-color: #27ae60; background: #eafaf1; }
 
-    img { max-width: 100%; border-radius: 6px; margin-top: 8px; display: block; }
-    .meta { color: #555; font-size: 0.9em; margin-top: 4px; }
+img { max-width: 100%; border-radius: 6px; margin-top: 8px; display: block; }
+.meta { color: #555; font-size: 0.9em; margin-top: 4px; }
 
-    .ingredients-list {
-      margin: 6px 0 0 0; padding: 8px 8px 8px 24px;
-      background: rgba(240,248,245,0.7); border-radius: 8px;
-      font-size: 0.95em;
-    }
-    .ingredients-list li { margin-bottom: 3px; }
+.ingredients-list {
+margin: 6px 0 0 0; padding: 8px 8px 8px 24px;
+background: rgba(240,248,245,0.7); border-radius: 8px;
+font-size: 0.95em;
+}
+.ingredients-list li { margin-bottom: 3px; }
 
-    .photo-strip { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
-    .photo-strip img {
-      width: 84px; height: 84px; object-fit: cover; border-radius: 8px;
-      margin-top: 0; flex-shrink: 0; border: 1px solid #ddd;
-    }
-    .modal-gallery { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
-    .modal-gallery img {
-      width: 96px; height: 96px; object-fit: cover; border-radius: 8px;
-      margin-top: 0; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;
-    }
-    .modal-gallery img.selected { border-color: #4a90e2; }
+.photo-strip { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
+.photo-strip img {
+width: 84px; height: 84px; object-fit: cover; border-radius: 8px;
+margin-top: 0; flex-shrink: 0; border: 1px solid #ddd;
+}
+.modal-gallery { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
+.modal-gallery img {
+width: 96px; height: 96px; object-fit: cover; border-radius: 8px;
+margin-top: 0; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;
+}
+.modal-gallery img.selected { border-color: #4a90e2; }
 
-    .category-badge {
-      display: inline-block; padding: 4px 10px; border-radius: 4px;
-      font-size: 0.85em; font-weight: 600; color: white; margin-bottom: 8px;
-    }
-    .cat-dessert { background: #8e44ad; }
-    .cat-soup { background: #2c3e50; }
-    .cat-salad { background: #27ae60; }
-    .cat-cold-snack { background: #f1c40f; color: #000; }
-    .cat-hot-snack { background: #e67e22; }
-    .cat-sweet-pastry { background: #9b59b6; }
-    .cat-savory-pastry { background: #34495e; }
-    .cat-main { background: #2980b9; }
-    .cat-side { background: #16a085; }
+.category-badge {
+display: inline-block; padding: 4px 10px; border-radius: 4px;
+font-size: 0.85em; font-weight: 600; color: white; margin-bottom: 8px;
+}
+.cat-dessert { background: #8e44ad; }
+.cat-soup { background: #2c3e50; }
+.cat-salad { background: #27ae60; }
+.cat-cold-snack { background: #f1c40f; color: #000; }
+.cat-hot-snack { background: #e67e22; }
+.cat-sweet-pastry { background: #9b59b6; }
+.cat-savory-pastry { background: #34495e; }
+.cat-main { background: #2980b9; }
+.cat-side { background: #16a085; }
 
-    .rating-line { color: #e67e22; font-size: 1em; margin: 4px 0; font-weight: 600; }
-    .rating-count { color: #777; font-size: 0.85em; font-weight: 400; }
+.rating-line { color: #e67e22; font-size: 1em; margin: 4px 0; font-weight: 600; }
+.rating-count { color: #777; font-size: 0.85em; font-weight: 400; }
 
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn {
-      background: rgba(255,255,255,0.9); color: #333; border: 1px solid #ddd;
-      border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 600; min-height: 46px;
-    }
-    .tab-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn {
+background: rgba(255,255,255,0.9); color: #333; border: 1px solid #ddd;
+border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 600; min-height: 46px;
+}
+.tab-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
 
-    .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; }
-    .login-card { max-width: 350px; width: 100%; padding: 24px; border-radius: 12px; background: rgba(255,255,255,0.96); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-    .login-card h2 { text-align: center; margin-bottom: 16px; }
-    .login-error { color: #d9534f; font-size: 0.9em; margin-bottom: 8px; display: none; }
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; }
+.login-card { max-width: 350px; width: 100%; padding: 24px; border-radius: 12px; background: rgba(255,255,255,0.96); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.login-card h2 { text-align: center; margin-bottom: 16px; }
+.login-error { color: #d9534f; font-size: 0.9em; margin-bottom: 8px; display: none; }
 
-    .ing-hint {
-      font-size: 0.85em; color: #2c7a4b; margin: -4px 0 8px 0;
-      display: flex; align-items: center; gap: 4px; min-height: 1.2em;
-    }
+.ing-hint {
+font-size: 0.85em; color: #2c7a4b; margin: -4px 0 8px 0;
+display: flex; align-items: center; gap: 4px; min-height: 1.2em;
+}
 
-    /* Кнопка диктовки + звуковые волны */
-    .dictation-row { display: flex; gap: 8px; align-items: stretch; }
-    .dictation-row textarea { flex: 1; }
-    .mic-btn {
-      width: 56px; min-width: 56px; padding: 0; margin-bottom: 8px;
-      font-size: 22px; line-height: 1;
-      background: #fff; color: #555; border: 1px solid #ddd;
-      position: relative;
-    }
-    .mic-btn:hover { background: #f0f0f0; }
-    .mic-btn.recording {
-      background: #d9534f; color: white; border-color: #d9534f;
-      animation: micPulse 1.2s infinite;
-    }
-    @keyframes micPulse {
-      0% { box-shadow: 0 0 0 0 rgba(217,83,79,0.45); }
-      70% { box-shadow: 0 0 0 14px rgba(217,83,79,0); }
-      100% { box-shadow: 0 0 0 0 rgba(217,83,79,0); }
-    }
-    .mic-btn.recording::before, .mic-btn.recording::after {
-      content: ''; position: absolute; inset: 0;
-      border-radius: 8px; border: 2px solid rgba(217,83,79,0.55);
-      animation: micRing 1.6s ease-out infinite;
-      pointer-events: none;
-    }
-    .mic-btn.recording::after { animation-delay: 0.8s; }
-    @keyframes micRing {
-      from { transform: scale(1); opacity: 0.7; }
-      to   { transform: scale(1.9); opacity: 0; }
-    }
-    .dictation-hint {
-      font-size: 0.85em; color: #d9534f; margin: -4px 0 8px 0; min-height: 1.2em;
-    }
+/* Кнопка диктовки + звуковые волны */
+.dictation-row { display: flex; gap: 8px; align-items: stretch; }
+.dictation-row textarea { flex: 1; }
+.mic-btn {
+width: 56px; min-width: 56px; padding: 0; margin-bottom: 8px;
+font-size: 22px; line-height: 1;
+background: #fff; color: #555; border: 1px solid #ddd;
+position: relative;
+}
+.mic-btn:hover { background: #f0f0f0; }
+.mic-btn.recording {
+background: #d9534f; color: white; border-color: #d9534f;
+animation: micPulse 1.2s infinite;
+}
+@keyframes micPulse {
+0% { box-shadow: 0 0 0 0 rgba(217,83,79,0.45); }
+70% { box-shadow: 0 0 0 14px rgba(217,83,79,0); }
+100% { box-shadow: 0 0 0 0 rgba(217,83,79,0); }
+}
+.mic-btn.recording::before, .mic-btn.recording::after {
+content: ''; position: absolute; inset: 0;
+border-radius: 8px; border: 2px solid rgba(217,83,79,0.55);
+animation: micRing 1.6s ease-out infinite;
+pointer-events: none;
+}
+.mic-btn.recording::after { animation-delay: 0.8s; }
+@keyframes micRing {
+from { transform: scale(1); opacity: 0.7; }
+to { transform: scale(1.9); opacity: 0; }
+}
+.dictation-hint {
+font-size: 0.85em; color: #d9534f; margin: -4px 0 8px 0; min-height: 1.2em;
+}
 
-    /* Анимация звёзд при оценке */
-    .stars-input { display: flex; gap: 4px; margin-bottom: 8px; }
-    .stars-input button {
-      width: 52px; height: 52px; font-size: 26px; padding: 0; margin-bottom: 0;
-      background: #f5f5f5; color: #ccc; border: 1px solid #ddd; border-radius: 8px;
-    }
-    .stars-input button.active { color: #f39c12; background: #fff7e0; border-color: #f39c12; }
-    .stars-input button.pop { animation: starPop 0.4s ease; }
-    @keyframes starPop {
-      0%   { transform: scale(1); }
-      40%  { transform: scale(1.35) rotate(-8deg); }
-      100% { transform: scale(1); }
-    }
-    .review-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #ddd; }
-    .review-stars { color: #f39c12; }
+/* Анимация звёзд при оценке */
+.stars-input { display: flex; gap: 4px; margin-bottom: 8px; }
+.stars-input button {
+width: 52px; height: 52px; font-size: 26px; padding: 0; margin-bottom: 0;
+background: #f5f5f5; color: #ccc; border: 1px solid #ddd; border-radius: 8px;
+}
+.stars-input button.active { color: #f39c12; background: #fff7e0; border-color: #f39c12; }
+.stars-input button.pop { animation: starPop 0.4s ease; }
+@keyframes starPop {
+0% { transform: scale(1); }
+40% { transform: scale(1.35) rotate(-8deg); }
+100% { transform: scale(1); }
+}
+.review-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #ddd; }
+.review-stars { color: #f39c12; }
 
-    .edit-notice { background: #fff7e0; border: 1px solid #f39c12; border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 0.9em; display: none; }
+.edit-notice { background: #fff7e0; border: 1px solid #f39c12; border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 0.9em; display: none; }
 
-    .favorites-toggle {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.95); border: 1px solid #ddd;
-      border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600;
-      user-select: none; white-space: nowrap; min-height: 46px;
-    }
-    .favorites-toggle input { width: auto; margin: 0; }
-    .favorites-toggle.active { border-color: #f39c12; background: #fff7e0; }
+.favorites-toggle {
+display: flex; align-items: center; gap: 6px;
+background: rgba(255,255,255,0.95); border: 1px solid #ddd;
+border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600;
+user-select: none; white-space: nowrap; min-height: 46px;
+}
+.favorites-toggle input { width: auto; margin: 0; }
+.favorites-toggle.active { border-color: #f39c12; background: #fff7e0; }
 
-    /* Конфетти */
-    .confetti {
-      position: fixed; z-index: 4000; pointer-events: none;
-      border-radius: 2px;
-      animation: confettiFly 0.9s ease-out forwards;
-    }
-    @keyframes confettiFly {
-      from { transform: translate(0,0) rotate(0deg); opacity: 1; }
-      to   { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
-    }
+/* Конфетти */
+.confetti {
+position: fixed; z-index: 4000; pointer-events: none;
+border-radius: 2px;
+animation: confettiFly 0.9s ease-out forwards;
+}
+@keyframes confettiFly {
+from { transform: translate(0,0) rotate(0deg); opacity: 1; }
+to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
 
-    /* Шаги с кнопками таймера */
-    .step-line { margin-bottom: 8px; }
-    .timer-inline {
-      display: inline-block; width: auto; min-height: 38px; padding: 4px 14px; margin: 4px 0 0;
-      font-size: 0.9em; background: #fff3c4; color: #7a4a1f;
-      border: 1px solid #f39c12; border-radius: 8px; font-weight: 600;
-    }
-    .timer-inline:hover { background: #ffe9a8; }
+/* Шаги с кнопками таймера */
+.step-line { margin-bottom: 8px; }
+.timer-inline {
+display: inline-block; width: auto; min-height: 38px; padding: 4px 14px; margin: 4px 0 0;
+font-size: 0.9em; background: #fff3c4; color: #7a4a1f;
+border: 1px solid #f39c12; border-radius: 8px; font-weight: 600;
+}
+.timer-inline:hover { background: #ffe9a8; }
 
-    /* Пересчёт порций */
-    .portions-box {
-      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-      background: rgba(240,248,245,0.8); border-radius: 8px; padding: 10px; margin-bottom: 8px;
-    }
-    .portions-box input { width: 84px; margin: 0; text-align: center; }
-    .portions-box button { width: auto; margin: 0; min-height: 44px; padding: 8px 14px; }
-    .portions-note { font-size: 0.85em; color: #777; margin-top: 6px; }
+/* Пересчёт порций */
+.portions-box {
+display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+background: rgba(240,248,245,0.8); border-radius: 8px; padding: 10px; margin-bottom: 8px;
+}
+.portions-box input { width: 84px; margin: 0; text-align: center; }
+.portions-box button { width: auto; margin: 0; min-height: 44px; padding: 8px 14px; }
+.portions-note { font-size: 0.85em; color: #777; margin-top: 6px; }
 
-    /* Глобальный таймер */
-    .timer-banner {
-      position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 3500;
-      background: #2c3e50; color: #fff; border-radius: 14px;
-      padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-      display: none; align-items: center; justify-content: space-between; gap: 12px;
-    }
-    .timer-banner .tb-label { font-size: 0.85em; opacity: 0.8; }
-    .timer-banner .tb-time { font-size: 1.7em; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .timer-banner button { width: auto; min-height: 44px; margin: 0; padding: 8px 18px; background: #d9534f; }
+/* Глобальный таймер */
+.timer-banner {
+position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 3500;
+background: #2c3e50; color: #fff; border-radius: 14px;
+padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+display: none; align-items: center; justify-content: space-between; gap: 12px;
+}
+.timer-banner .tb-label { font-size: 0.85em; opacity: 0.8; }
+.timer-banner .tb-time { font-size: 1.7em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.timer-banner button { width: auto; min-height: 44px; margin: 0; padding: 8px 18px; background: #d9534f; }
 
-    /* РЕЖИМ ГОТОВКИ */
-    .cook-mode {
-      position: fixed; inset: 0; z-index: 3000;
-      background: linear-gradient(160deg, #fff8ec 0%, #f7ead2 100%);
-      display: none; flex-direction: column; padding: 16px;
-    }
-    .cook-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .cook-dish {
-      font-family: 'Comfortaa', sans-serif; font-weight: 700;
-      color: #7a4a1f; font-size: 1.05em;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .cook-exit {
-      width: auto; min-height: 44px; padding: 8px 14px; margin: 0;
-      background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd;
-    }
-    .cook-dots { text-align: center; font-size: 1.5em; color: #d9c9a8; letter-spacing: 6px; margin: 10px 0 4px; }
-    .cook-dots .on { color: #e67e22; }
-    .cook-stepnum { text-align: center; color: #a07848; font-size: 0.95em; margin-bottom: 10px; }
-    .cook-text {
-      flex: 1; display: flex; align-items: center; overflow-y: auto;
-      font-size: 1.75em; line-height: 1.45; color: #3a2a18; font-weight: 600;
-      padding: 8px 4px;
-    }
-    .cook-timer-area { text-align: center; min-height: 60px; margin: 8px 0; }
-    .cook-timer-btn {
-      width: auto; min-height: 52px; padding: 10px 22px; margin: 0;
-      background: #fff3c4; color: #7a4a1f; border: 1px solid #f39c12;
-      font-size: 1.05em; font-weight: 700;
-    }
-    .cook-timer-btn:hover { background: #ffe9a8; }
-    .cook-controls { display: flex; gap: 12px; }
-    .cook-controls button { flex: 1; min-height: 68px; font-size: 1.15em; margin: 0; }
-    .cook-controls button:disabled { opacity: 0.35; cursor: default; }
-    .cook-controls .cook-finish { background: #2ecc71; }
-    .cook-controls .cook-finish:hover { background: #27ae60; }
-  </style>
+/* РЕЖИМ ГОТОВКИ */
+.cook-mode {
+position: fixed; inset: 0; z-index: 3000;
+background: linear-gradient(160deg, #fff8ec 0%, #f7ead2 100%);
+display: none; flex-direction: column; padding: 16px;
+}
+.cook-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cook-dish {
+font-family: 'Comfortaa', sans-serif; font-weight: 700;
+color: #7a4a1f; font-size: 1.05em;
+overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cook-exit {
+width: auto; min-height: 44px; padding: 8px 14px; margin: 0;
+background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd;
+}
+.cook-dots { text-align: center; font-size: 1.5em; color: #d9c9a8; letter-spacing: 6px; margin: 10px 0 4px; }
+.cook-dots .on { color: #e67e22; }
+.cook-stepnum { text-align: center; color: #a07848; font-size: 0.95em; margin-bottom: 10px; }
+.cook-text {
+flex: 1; display: flex; align-items: center; overflow-y: auto;
+font-size: 1.75em; line-height: 1.45; color: #3a2a18; font-weight: 600;
+padding: 8px 4px;
+}
+.cook-timer-area { text-align: center; min-height: 60px; margin: 8px 0; }
+.cook-timer-btn {
+width: auto; min-height: 52px; padding: 10px 22px; margin: 0;
+background: #fff3c4; color: #7a4a1f; border: 1px solid #f39c12;
+font-size: 1.05em; font-weight: 700;
+}
+.cook-timer-btn:hover { background: #ffe9a8; }
+.cook-controls { display: flex; gap: 12px; }
+.cook-controls button { flex: 1; min-height: 68px; font-size: 1.15em; margin: 0; }
+.cook-controls button:disabled { opacity: 0.35; cursor: default; }
+.cook-controls .cook-finish { background: #2ecc71; }
+.cook-controls .cook-finish:hover { background: #27ae60; }
+.install-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fdf6e3;
+  border: 1px solid #d4c0a5;
+  border-radius: 16px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 9999;
+  max-width: 90%;
+}
+
+.install-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-icon {
+  font-size: 24px;
+}
+
+.install-text {
+  line-height: 1.4;
+  color: #333;
+  font-size: 15px;
+}
+
+.install-button {
+  background-color: #7a4a1f;
+  color: #fdf6e3;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.install-button:hover {
+  background-color: #633b18;
+}
+
+.install-button:active {
+  transform: scale(0.98);
+}
+
+.hidden {
+  display: none !important;
+}
+</style>
 </head>
 <body class="bg-all">
 
-  <!-- Индикатор загрузки: виден сразу, исчезает при запуске приложения -->
-  <div id="appLoader" style="display:flex; position:fixed; inset:0; z-index:5000; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:#fdf6e3; font-family:sans-serif; color:#7a4a1f;">
-    <div style="font-size:3em; animation: loaderSpin 2s linear infinite;">🍳</div>
-    <div>Разогреваем плиту…</div>
-  </div>
-  <style>@keyframes loaderSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }</style>
-
-  <!-- Сообщение об ошибке загрузки (показывается, если Firebase недоступен) -->
-  <div id="loadError" style="display:none; max-width:420px; margin:60px auto; padding:24px; background:#fff; border:1px solid #d9534f; border-radius:12px; text-align:center; font-family:sans-serif; position:relative; z-index:1;">
-    <div style="font-size:2.5em;">📡</div>
-    <h3 style="margin:8px 0;">Не получилось загрузить компоненты</h3>
-    <p style="color:#555; font-size:0.95em;">Похоже, нет доступа к серверам Firebase. Проверьте интернет и обновите страницу. Если не помогает — попробуйте другую сеть (например, мобильный интернет вместо Wi-Fi).</p>
-  </div>
-
-  <!-- Экран входа -->
-  <div id="loginScreen" class="login-screen" style="display:none;">
-    <div class="login-card">
-      <h2>Вход в семейные рецепты</h2>
-      <div id="loginError" class="login-error">Неверный email или пароль</div>
-      <input id="loginEmail" type="email" placeholder="Email">
-      <input id="loginPassword" type="password" placeholder="Пароль">
-      <button id="loginBtn">Войти</button>
-    </div>
-  </div>
-
-  <!-- Основное приложение -->
-  <div id="app" style="display:none; position:relative; z-index:1;">
-    <div class="kitchen-banner">
-      <div class="pot-line"><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>🍲</div>
-      <h1>Семейные рецепты</h1>
-      <div class="banner-note">книга нашей семьи</div>
-      <div class="gingham"></div>
-    </div>
-
-    <div class="header-actions-row">
-      <button id="randomBtn" class="ghost-btn" title="Покажет случайный рецепт">🎲 Что сегодня?</button>
-      <button id="fontBtn" class="ghost-btn" title="Крупный шрифт для чтения без очков">📖 Крупный шрифт</button>
-      <button id="logoutBtn" class="logout-btn">Выйти</button>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" data-view="recipes">Все рецепты</button>
-      <button class="tab-btn" data-view="wishlist">Хочу приготовить</button>
-    </div>
-
-    <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
-      <input id="searchInput" placeholder="Поиск: название, ингредиент, шаг…" style="flex:1; min-width:180px; margin-bottom:0;">
-      <select id="categoryFilter" style="max-width:200px; margin-bottom:0;">
-        <option value="all">Все категории</option>
-        <option value="десерт">🍰 Десерт</option>
-        <option value="суп">🍲 Суп</option>
-        <option value="салат">🥗 Салат</option>
-        <option value="холодная закуска">🧀 Холодная закуска</option>
-        <option value="горячая закуска">🥘 Горячая закуска</option>
-        <option value="выпечка сладкая">🧁 Выпечка сладкая</option>
-        <option value="выпечка не сладкая">🥐 Выпечка несладкая</option>
-        <option value="вторые блюда">🍖 Вторые блюда</option>
-        <option value="гарниры">🍚 Гарниры</option>
-      </select>
-      <label class="favorites-toggle" id="favToggle" title="Показывать только избранные">
-        <input type="checkbox" id="favOnly"> ⭐ Избранное
-      </label>
-    </div>
-
-    <!-- Форма добавления / редактирования -->
-    <div class="card" id="addFormCard" style="cursor:default;">
-      <h3 id="formTitle">Добавить рецепт</h3>
-      <div id="editNotice" class="edit-notice">Режим редактирования: меняйте поля и нажмите «Сохранить изменения».</div>
-      <input id="recipeTitle" placeholder="Название блюда">
-      <select id="recipeCategory" required>
-        <option value="" disabled selected>Выберите категорию</option>
-        <option value="десерт">🍰 Десерт</option>
-        <option value="суп">🍲 Суп</option>
-        <option value="салат">🥗 Салат</option>
-        <option value="холодная закуска">🧀 Холодная закуска</option>
-        <option value="горячая закуска">🥘 Горячая закуска</option>
-        <option value="выпечка сладкая">🧁 Выпечка сладкая</option>
-        <option value="выпечка не сладкая">🥐 Выпечка несладкая</option>
-        <option value="вторые блюда">🍖 Вторые блюда</option>
-        <option value="гарниры">🍚 Гарниры</option>
-      </select>
-      <div class="dictation-row">
-        <textarea id="recipeIngredients" placeholder="Ингредиенты: напишите или нажмите 🎤 и продиктуйте" rows="3"></textarea>
-        <button id="micIngredients" class="mic-btn" title="Диктовать ингредиенты голосом">🎤</button>
-      </div>
-      <div class="dictation-hint" id="dictIngredientsHint"></div>
-      <div class="ing-hint" id="ingHint"></div>
-      <div class="dictation-row">
-        <textarea id="recipeSteps" placeholder="Шаги приготовления: напишите или нажмите 🎤 и диктуйте по шагам" rows="4"></textarea>
-        <button id="micSteps" class="mic-btn" title="Диктовать шаги голосом">🎤</button>
-      </div>
-      <div class="dictation-hint" id="dictStepsHint"></div>
-      <input id="recipeLink" placeholder="Ссылка на источник (если есть)">
-      <input type="file" id="recipeImage" accept="image/*" multiple>
-      <small style="display:block; margin-bottom:8px; color:#777;">Можно выбрать до 4 фото: первое станет главным, остальные — подсказками к шагам.</small>
-      <button id="addRecipeBtn">Добавить рецепт</button>
-      <button id="cancelEditBtn" style="background:#6c757d; display:none;">Отменить редактирование</button>
-    </div>
-
-    <div id="recipesList"></div>
-
-    <!-- Модалка рецепта -->
-    <div id="recipeModal" class="card" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.98); z-index:1000; overflow-y:auto; max-width:none; margin:0; border-radius:0; cursor:default;">
-      <div style="padding:16px; max-width:700px; margin:0 auto;">
-        <h2 id="modalTitle"></h2>
-        <img id="modalImage" style="max-height:320px; width:100%; object-fit:contain; background:#f7f4ee; border:1px solid rgba(122,74,31,0.15); border-radius:8px;">
-        <div class="modal-gallery" id="modalGallery"></div>
-
-        <div class="portions-box" id="portionsBox">
-          <span style="font-weight:700;">Порций:</span>
-          <input id="portFrom" type="number" min="1" value="4" title="Сейчас в рецепте">
-          <span>→</span>
-          <input id="portTo" type="number" min="1" placeholder="2" title="Сколько нужно">
-          <button id="scaleBtn">Пересчитать</button>
-        </div>
-
-        <div id="modalIngredients" style="margin:12px 0;"></div>
-        <div id="modalSteps" style="margin:16px 0;"></div>
-        <div class="meta" id="modalMeta"></div>
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-
-        <button id="cookModeBtn" style="width:100%; margin-bottom:10px; background:#e67e22;">🍳 Режим готовки</button>
-        <button id="ttsBtn" class="ghost-btn" style="width:100%; margin-bottom:12px;">🔊 Читать вслух</button>
-
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button id="editFromModalBtn" class="edit-btn" style="flex:1;">Редактировать</button>
-          <button id="favModalBtn" class="icon-btn">☆</button>
-          <button id="cookedModalBtn" class="icon-btn">✓</button>
-        </div>
-        <button id="doneBtn" class="done-btn" style="width:100%; display:none; margin-top:8px;">Приготовил — вернуть в рецепты</button>
-
-        <h4>Оценка блюда</h4>
-        <div class="stars-input" id="starsInput">
-          <button data-star="1">★</button>
-          <button data-star="2">★</button>
-          <button data-star="3">★</button>
-          <button data-star="4">★</button>
-          <button data-star="5">★</button>
-        </div>
-        <input id="reviewName" placeholder="Ваше имя">
-        <textarea id="reviewText" placeholder="Отзыв после готовки: «супер, повторим», «слишком остро»…" rows="2"></textarea>
-        <button id="addReviewBtn">Оставить оценку</button>
-        <div id="reviewsList"></div>
-
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-        <button id="closeModalBtn" style="float:right;">Закрыть</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- РЕЖИМ ГОТОВКИ -->
-  <div id="cookMode" class="cook-mode">
-    <div class="cook-top">
-      <div class="cook-dish" id="cookDishName"></div>
-      <button id="cookExitBtn" class="cook-exit">✕ Выйти</button>
-    </div>
-    <div class="cook-dots" id="cookDots"></div>
-    <div class="cook-stepnum" id="cookStepNum"></div>
-    <div class="cook-text" id="cookStepText"></div>
-    <div class="cook-timer-area" id="cookTimerArea"></div>
-    <div class="cook-controls">
-      <button id="cookPrevBtn">← Назад</button>
-      <button id="cookNextBtn">Далее →</button>
-    </div>
-  </div>
-
-  <!-- Глобальный таймер -->
-  <div id="timerBanner" class="timer-banner">
-    <div>
-      <div class="tb-label">Таймер</div>
-      <div class="tb-time" id="timerTime">0:00</div>
-    </div>
-    <button id="timerStopBtn">Стоп</button>
-  </div>
-
-  <script type="module">
-    // Загрузка Firebase: три источника, таймаут, индикатор
-    let firebaseAppMod, firestoreMod, authMod;
-    const CDN_SOURCES = [
-      "https://www.gstatic.com/firebasejs/12.19.0/",
-      "https://cdn.jsdelivr.net/npm/firebase@12.19.0/",
-      "https://unpkg.com/firebase@12.19.0/"
-    ];
-    const FB_FILES = ["firebase-app.js", "firebase-firestore.js", "firebase-auth.js"];
-
-    function importWithTimeout(url, ms = 8000) {
-      return Promise.race([
-        import(url),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('Таймаут: ' + url)), ms))
-      ]);
-    }
-
-    async function loadFirebase() {
-      let lastError = null;
-      for (const base of CDN_SOURCES) {
-        try {
-          console.log('Пробую источник:', base);
-          const mods = await Promise.all(FB_FILES.map(f => importWithTimeout(base + f)));
-          firebaseAppMod = mods[0];
-          firestoreMod = mods[1];
-          authMod = mods[2];
-          return;
-        } catch (e) {
-          lastError = e;
-          console.warn('Источник не ответил за 8 секунд, пробую следующий:', base);
-        }
-      }
-      document.getElementById('appLoader').style.display = 'none';
-      document.getElementById('loadError').style.display = 'block';
-      throw lastError;
-    }
-
-    await loadFirebase();
-    document.getElementById('appLoader').style.display = 'none';
-
-    const { initializeApp } = firebaseAppMod;
-    const { getFirestore, collection, addDoc, doc, setDoc, getDoc, deleteDoc, onSnapshot, query, orderBy } = firestoreMod;
-    const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = authMod;
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyANI2kBCdtQiKgf_tTdm-9AdJw17DRtKPs",
-      authDomain: "recepts-928b8.firebaseapp.com",
-      projectId: "recepts-928b8",
-      storageBucket: "recepts-928b8.firebasestorage.app",
-      messagingSenderId: "253494978690",
-      appId: "1:253494978690:web:ff09676a79843aa6712c9b"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const recipesCol = collection(db, 'recipes');
-    const wishlistCol = collection(db, 'wishlist');
-
-    // --- DOM ---
-    const loginScreen = document.getElementById('loginScreen');
-    const appDiv = document.getElementById('app');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginError = document.getElementById('loginError');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const fontBtn = document.getElementById('fontBtn');
-    const randomBtn = document.getElementById('randomBtn');
-
-    const titleInput = document.getElementById('recipeTitle');
-    const categoryInput = document.getElementById('recipeCategory');
-    const ingredientsInput = document.getElementById('recipeIngredients');
-    const ingHint = document.getElementById('ingHint');
-    const dictIngredientsHint = document.getElementById('dictIngredientsHint');
-    const stepsInput = document.getElementById('recipeSteps');
-    const dictStepsHint = document.getElementById('dictStepsHint');
-    const linkInput = document.getElementById('recipeLink');
-    const imageInput = document.getElementById('recipeImage');
-    const addRecipeBtn = document.getElementById('addRecipeBtn');
-    const cancelEditBtn = document.getElementById('cancelEditBtn');
-    const editNotice = document.getElementById('editNotice');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const searchInput = document.getElementById('searchInput');
-    const favOnly = document.getElementById('favOnly');
-    const favToggle = document.getElementById('favToggle');
-    const recipesList = document.getElementById('recipesList');
-    const formTitle = document.getElementById('formTitle');
-
-    const modal = document.getElementById('recipeModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalImage = document.getElementById('modalImage');
-    const modalGallery = document.getElementById('modalGallery');
-    const modalIngredients = document.getElementById('modalIngredients');
-    const modalSteps = document.getElementById('modalSteps');
-    const modalMeta = document.getElementById('modalMeta');
-    const doneBtn = document.getElementById('doneBtn');
-    const editFromModalBtn = document.getElementById('editFromModalBtn');
-    const favModalBtn = document.getElementById('favModalBtn');
-    const cookedModalBtn = document.getElementById('cookedModalBtn');
-    const ttsBtn = document.getElementById('ttsBtn');
-    const cookModeBtn = document.getElementById('cookModeBtn');
-
-    const portFrom = document.getElementById('portFrom');
-    const portTo = document.getElementById('portTo');
-    const scaleBtn = document.getElementById('scaleBtn');
-
-    const cookMode = document.getElementById('cookMode');
-    const cookDishName = document.getElementById('cookDishName');
-    const cookDots = document.getElementById('cookDots');
-    const cookStepNum = document.getElementById('cookStepNum');
-    const cookStepText = document.getElementById('cookStepText');
-    const cookTimerArea = document.getElementById('cookTimerArea');
-    const cookPrevBtn = document.getElementById('cookPrevBtn');
-    const cookNextBtn = document.getElementById('cookNextBtn');
-    const cookExitBtn = document.getElementById('cookExitBtn');
-
-    const timerBanner = document.getElementById('timerBanner');
-    const timerTime = document.getElementById('timerTime');
-    const timerStopBtn = document.getElementById('timerStopBtn');
-
-    const starsInput = document.getElementById('starsInput');
-    const reviewName = document.getElementById('reviewName');
-    const reviewText = document.getElementById('reviewText');
-    const addReviewBtn = document.getElementById('addReviewBtn');
-    const reviewsList = document.getElementById('reviewsList');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    const micIngredients = document.getElementById('micIngredients');
-    const micSteps = document.getElementById('micSteps');
-
-    const tabs = document.querySelectorAll('.tab-btn');
-    let currentView = 'recipes';
-    let currentRecipeId = null;
-    let currentCollection = 'recipes';
-    let currentRecipeData = null;
-    let allRecipes = [];
-    let allWishlist = [];
-    let selectedStars = 0;
-
-    let editingId = null;
-    let editingCollection = null;
-    let editingImages = [];
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
-    }
-
-    function getCategoryClass(cat) {
-      const map = {
-        'десерт': 'cat-dessert', 'суп': 'cat-soup', 'салат': 'cat-salad',
-        'холодная закуска': 'cat-cold-snack', 'горячая закуска': 'cat-hot-snack',
-        'выпечка сладкая': 'cat-sweet-pastry', 'выпечка не сладкая': 'cat-savory-pastry',
-        'вторые блюда': 'cat-main', 'гарниры': 'cat-side'
-      };
-      return map[cat] || '';
-    }
-
-    function getCategoryEmoji(cat) {
-      const map = {
-        'десерт': '🍰', 'суп': '🍲', 'салат': '🥗',
-        'холодная закуска': '🧀', 'горячая закуска': '🥘',
-        'выпечка сладкая': '🧁', 'выпечка не сладкая': '🥐',
-        'вторые блюда': '🍖', 'гарниры': '🍚'
-      };
-      return map[cat] || '🍽️';
-    }
-
-    function getImages(r) {
-      const arr = Array.isArray(r.imagesBase64) ? r.imagesBase64.filter(Boolean) : [];
-      if (arr.length === 0 && r.imageBase64) arr.push(r.imageBase64);
-      return arr;
-    }
-
-    function addedDateStr(r) {
-      try {
-        if (r.createdAt && r.createdAt.seconds) return new Date(r.createdAt.seconds * 1000).toLocaleDateString('ru-RU');
-        if (r.createdAt) return new Date(r.createdAt).toLocaleDateString('ru-RU');
-      } catch (e) {}
-      return '';
-    }
-
-    function ingredientsToHtml(raw) {
-      if (!raw || !raw.trim()) return '';
-      const items = raw
-        .split(/[,\n]/)
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-      if (items.length === 0) return '';
-      return `<b>🥕 Ингредиенты:</b><ul class="ingredients-list">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
-    }
-
-    // --- Таймеры в шагах ---
-    function parseTime(text) {
-      const m = text.match(/(\d+)\s*(мин|минут[аы]?|сек|секунд[аы]?|час[аов]?|ч\b)/i);
-      if (!m) return null;
-      const n = parseInt(m[1], 10);
-      const u = m[2].toLowerCase();
-      if (u.startsWith('сек')) return n;
-      if (u.startsWith('час') || u === 'ч') return n * 3600;
-      return n * 60;
-    }
-
-    function fmtTime(sec) {
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      if (h) return (m ? `${h} ч ${m} мин` : `${h} ч`);
-      if (m) return `${m} мин`;
-      return `${s} сек`;
-    }
-
-    function renderStepsHtml(raw) {
-      if (!raw || !raw.trim()) return '';
-      return raw.split('\n').filter(s => s.trim()).map(line => {
-        const t = parseTime(line);
-        const esc = escapeHtml(line);
-        return `<div class="step-line">${esc}${t ? ` <button class="timer-inline" data-sec="${t}">⏱ ${fmtTime(t)}</button>` : ''}</div>`;
-      }).join('');
-    }
-
-    let timerInterval = null;
-    function stopGlobalTimer() {
-      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-      timerBanner.style.display = 'none';
-    }
-
-    function beep() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = 880;
-        g.gain.value = 0.25;
-        o.start();
-        setTimeout(() => { try { o.stop(); ctx.close(); } catch (e) {} }, 900);
-      } catch (e) {}
-    }
-
-    function startGlobalTimer(seconds) {
-      stopGlobalTimer();
-      let remain = seconds;
-      timerBanner.style.display = 'flex';
-      const upd = () => {
-        const m = Math.floor(remain / 60), s = remain % 60;
-        timerTime.textContent = `${m}:${String(s).padStart(2, '0')}`;
-      };
-      upd();
-      timerInterval = setInterval(() => {
-        remain--;
-        upd();
-        if (remain <= 0) {
-          clearInterval(timerInterval); timerInterval = null;
-          timerTime.textContent = '🔔 Время вышло!';
-          beep();
-          try {
-            const u = new SpeechSynthesisUtterance('Время вышло!');
-            u.lang = 'ru-RU';
-            speechSynthesis.speak(u);
-          } catch (e) {}
-          setTimeout(() => { timerBanner.style.display = 'none'; }, 6000);
-        }
-      }, 1000);
-    }
-
-    timerStopBtn.addEventListener('click', stopGlobalTimer);
-
-    // Клик по ⏱ в модалке (делегирование)
-    modal.addEventListener('click', (e) => {
-      const btn = e.target.closest('.timer-inline');
-      if (btn) startGlobalTimer(parseInt(btn.getAttribute('data-sec'), 10));
-    });
-
-    // --- Пересчёт порций ---
-    function scaleIngredientsText(raw, ratio) {
-      return raw.replace(/\d+(?:[.,]\d+)?/g, (m) => {
-        const num = parseFloat(m.replace(',', '.'));
-        const scaled = Math.round(num * ratio * 100) / 100;
-        return String(scaled).replace('.', ',');
-      });
-    }
-
-    scaleBtn.addEventListener('click', () => {
-      if (!currentRecipeData) return;
-      const from = parseFloat(portFrom.value) || 4;
-      const to = parseFloat(portTo.value);
-      if (!to || to <= 0) { alert('Укажите, на сколько порций пересчитать'); return; }
-      const raw = currentRecipeData.ingredientsShort || '';
-      if (!raw.trim()) { alert('В этом рецепте нет списка ингредиентов'); return; }
-      const ratio = to / from;
-      modalIngredients.innerHTML =
-        ingredientsToHtml(scaleIngredientsText(raw, ratio)) +
-        `<div class="portions-note">Пересчитано на ${to} порц. (вместо ${from}). Это только просмотр — в базе рецепт не изменился. Дробные значения (например, 0,5 ч. л.) можно округлить по вкусу.</div>`;
-    });
-
-    // --- Конфетти ---
-    function launchConfetti(x, y) {
-      const colors = ['#f39c12', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#e67e22'];
-      for (let i = 0; i < 20; i++) {
-        const p = document.createElement('span');
-        p.className = 'confetti';
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 60 + Math.random() * 90;
-        p.style.left = x + 'px';
-        p.style.top = y + 'px';
-        p.style.background = colors[Math.floor(Math.random() * colors.length)];
-        p.style.width = (6 + Math.random() * 6) + 'px';
-        p.style.height = (6 + Math.random() * 8) + 'px';
-        p.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
-        p.style.setProperty('--dy', (Math.sin(angle) * dist - 40) + 'px');
-        p.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 1000);
-      }
-    }
-
-    // --- Умное заполнение формы ---
-    function formatIngredients(raw) {
-      return raw
-        .split(/[,\n]+/)
-        .map(s => s.trim().replace(/^[-•\d.)\s]+/, ''))
-        .filter(s => s.length > 0)
-        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-        .join('\n');
-    }
-
-    function formatSteps(raw) {
-      const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
-      if (lines.length === 0) return raw;
-      const numbered = lines.filter(l => /^\d+[.)]\s/.test(l)).length;
-      if (numbered >= lines.length * 0.6) return lines.join('\n');
-      return lines.map((l, i) => `${i + 1}. ${l.replace(/^[-•\s]+/, '')}`).join('\n');
-    }
-
-    function updateIngHint() {
-      const items = ingredientsInput.value.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
-      if (items.length === 0) {
-        ingHint.textContent = '';
-      } else {
-        ingHint.textContent = `🥕 ${items.length} ${items.length === 1 ? 'ингредиент' : items.length < 5 ? 'ингредиента' : 'ингредиентов'} — при выходе из поля всё красиво оформится`;
-      }
-    }
-    ingredientsInput.addEventListener('input', updateIngHint);
-
-    ingredientsInput.addEventListener('blur', () => {
-      const f = formatIngredients(ingredientsInput.value);
-      if (f) ingredientsInput.value = f;
-      updateIngHint();
-    });
-    stepsInput.addEventListener('blur', () => {
-      const f = formatSteps(stepsInput.value);
-      if (f) stepsInput.value = f;
-    });
-
-    // --- Диктовка голосом ---
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let activeDictation = null;
-
-    if (!SpeechRecognition) {
-      micIngredients.style.display = 'none';
-      micSteps.style.display = 'none';
-    }
-
-    function stopDictation() {
-      if (!activeDictation) return;
-      try { activeDictation.rec.stop(); } catch (e) {}
-      activeDictation.btn.classList.remove('recording');
-      activeDictation.btn.textContent = '🎤';
-      activeDictation.hint.textContent = '';
-      const f = activeDictation.mode === 'ingredients'
-        ? formatIngredients(activeDictation.textarea.value)
-        : formatSteps(activeDictation.textarea.value);
-      if (f) activeDictation.textarea.value = f;
-      updateIngHint();
-      activeDictation = null;
-    }
-
-    function startDictation(btn, textarea, hint, mode) {
-      const rec = new SpeechRecognition();
-      rec.lang = 'ru-RU';
-      rec.continuous = true;
-      rec.interimResults = false;
-      rec.maxAlternatives = 1;
-
-      rec.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            let text = event.results[i][0].transcript.trim();
-            if (!text) continue;
-            text = text.charAt(0).toUpperCase() + text.slice(1);
-            const current = textarea.value.trim();
-            if (mode === 'ingredients') {
-              textarea.value = current ? current + ',\n' + text : text;
-            } else {
-              textarea.value = current ? current + '\n' + text : text;
-            }
-            textarea.scrollTop = textarea.scrollHeight;
-            if (mode === 'ingredients') updateIngHint();
-          }
-        }
-      };
-
-      rec.onerror = (event) => {
-        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          hint.textContent = 'Нет доступа к микрофону — разрешите его в настройках браузера';
-        } else if (event.error === 'no-speech') {
-          hint.textContent = 'Наслушался тишины — скажите что-нибудь 🙂';
-        } else {
-          hint.textContent = 'Не получилось распознать речь, попробуйте ещё раз';
-        }
-      };
-
-      rec.onend = () => {
-        if (activeDictation && activeDictation.rec === rec) stopDictation();
-      };
-
-      try {
-        rec.start();
-      } catch (e) {
-        hint.textContent = 'Не удалось запустить диктовку';
-        return;
-      }
-
-      activeDictation = { rec, btn, textarea, mode, hint };
-      btn.classList.add('recording');
-      btn.textContent = '⏹';
-      hint.textContent = '🎙️ Слушаю… говорите, я записываю. Нажмите ⏹, чтобы закончить';
-    }
-
-    micIngredients.addEventListener('click', () => {
-      if (activeDictation) { stopDictation(); return; }
-      if (!SpeechRecognition) {
-        alert('Ваш браузер не поддерживает диктовку. Попробуйте Chrome или Safari.');
-        return;
-      }
-      ingredientsInput.focus();
-      startDictation(micIngredients, ingredientsInput, dictIngredientsHint, 'ingredients');
-    });
-
-    micSteps.addEventListener('click', () => {
-      if (activeDictation) { stopDictation(); return; }
-      if (!SpeechRecognition) {
-        alert('Ваш браузер не поддерживает диктовку. Попробуйте Chrome или Safari.');
-        return;
-      }
-      stepsInput.focus();
-      startDictation(micSteps, stepsInput, dictStepsHint, 'steps');
-    });
-
-    // --- Режим крупного шрифта ---
-    function applyLargeFont() {
-      const on = localStorage.getItem('largeFont') === '1';
-      document.body.classList.toggle('large-font', on);
-      fontBtn.textContent = on ? '📖 Обычный шрифт' : '📖 Крупный шрифт';
-    }
-    fontBtn.addEventListener('click', () => {
-      const on = localStorage.getItem('largeFont') === '1';
-      localStorage.setItem('largeFont', on ? '0' : '1');
-      applyLargeFont();
-    });
-
-    // --- Чтение вслух ---
-    function stopSpeech() {
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
-      ttsBtn.textContent = '🔊 Читать вслух';
-      ttsBtn.classList.remove('tts-active');
-    }
-
-    ttsBtn.addEventListener('click', () => {
-      if (!('speechSynthesis' in window)) {
-        alert('Ваш браузер не умеет читать текст вслух');
-        return;
-      }
-      if (speechSynthesis.speaking) {
-        stopSpeech();
-        return;
-      }
-      const parts = [modalTitle.textContent];
-      if (modalIngredients.textContent.trim()) parts.push('Ингредиенты: ' + modalIngredients.textContent);
-      if (modalSteps.textContent.trim()) parts.push('Приготовление: ' + modalSteps.textContent);
-      const text = parts.join('. ').replace(/\s+/g, ' ').trim();
-      if (!text) return;
-
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ru-RU';
-      u.rate = 0.95;
-      u.onend = () => stopSpeech();
-      u.onerror = () => stopSpeech();
-      speechSynthesis.speak(u);
-      ttsBtn.textContent = '⏹ Остановить чтение';
-      ttsBtn.classList.add('tts-active');
-    });
-
-    // --- РЕЖИМ ГОТОВКИ ---
-    let cookState = null;
-    let wakeLock = null;
-
-    async function lockScreen() {
-      try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-        }
-      } catch (e) { /* не критично */ }
-    }
-    async function unlockScreen() {
-      try { if (wakeLock) { await wakeLock.release(); wakeLock = null; } } catch (e) {}
-    }
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && cookState) lockScreen();
-    });
-
-    cookModeBtn.addEventListener('click', openCookMode);
-
-    function openCookMode() {
-      if (!currentRecipeData) return;
-      const lines = (currentRecipeData.steps || '')
-        .split('\n').map(s => s.trim()).filter(Boolean)
-        .map(s => s.replace(/^\d+[.)]\s*/, ''));
-      if (lines.length === 0) { alert('В этом рецепте нет шагов'); return; }
-
-      cookState = { steps: lines, idx: 0 };
-      stopSpeech();
-      stopGlobalTimer();
-      modal.style.display = 'none';
-      cookMode.style.display = 'flex';
-      cookDishName.textContent = currentRecipeData.title || '';
-      renderCookStep();
-      lockScreen();
-    }
-
-    function renderCookStep() {
-      const total = cookState.steps.length;
-      const i = cookState.idx;
-      cookStepNum.textContent = `Шаг ${i + 1} из ${total}`;
-      cookDots.innerHTML = Array.from({ length: total }, (_, k) =>
-        `<span class="${k <= i ? 'on' : ''}">●</span>`
-      ).join('');
-      cookStepText.textContent = cookState.steps[i];
-      cookStepText.scrollTop = 0;
-
-      const t = parseTime(cookState.steps[i]);
-      cookTimerArea.innerHTML = t
-        ? `<button class="cook-timer-btn" data-sec="${t}">⏱ Засечь ${fmtTime(t)}</button>`
-        : '';
-
-      const isLast = i === total - 1;
-      cookNextBtn.textContent = isLast ? '✅ Приготовил!' : 'Далее →';
-      cookNextBtn.classList.toggle('cook-finish', isLast);
-      cookPrevBtn.disabled = i === 0;
-    }
-
-    cookTimerArea.addEventListener('click', (e) => {
-      const btn = e.target.closest('.cook-timer-btn');
-      if (btn) startGlobalTimer(parseInt(btn.getAttribute('data-sec'), 10));
-    });
-
-    cookPrevBtn.addEventListener('click', () => {
-      if (!cookState || cookState.idx === 0) return;
-      cookState.idx--;
-      renderCookStep();
-    });
-
-    cookNextBtn.addEventListener('click', () => {
-      if (!cookState) return;
-      if (cookState.idx < cookState.steps.length - 1) {
-        cookState.idx++;
-        renderCookStep();
-      } else {
-        finishCooking();
-      }
-    });
-
-    cookExitBtn.addEventListener('click', () => {
-      stopGlobalTimer();
-      unlockScreen();
-      cookMode.style.display = 'none';
-      cookState = null;
-      if (currentRecipeId) openRecipe(currentRecipeId);
-    });
-
-    async function finishCooking() {
-      if (!currentRecipeId) return;
-      const id = currentRecipeId;
-      const col = currentCollection;
-      stopGlobalTimer();
-      unlockScreen();
-      cookMode.style.display = 'none';
-      cookState = null;
-      currentRecipeId = null;
-      modal.style.display = 'none';
-
-      try {
-        if (col === 'recipes') {
-          await toggleCooked(id);
-        } else {
-          await moveWishlistToRecipes(id);
-        }
-        launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
-      } catch (e) {
-        console.error(e);
-        alert('Не удалось сохранить отметку');
-      }
-    }
-
-    // --- Случайный рецепт ---
-    randomBtn.addEventListener('click', () => {
-      const pool = currentView === 'recipes' ? allRecipes : allWishlist;
-      if (pool.length === 0) {
-        alert('Пока нечего выбирать — добавьте рецепты 🙂');
-        return;
-      }
-      openRecipe(pool[Math.floor(Math.random() * pool.length)].id);
-    });
-
-    // --- Фон ---
-    function applyBackground() {
-      const bgMap = {
-        'десерт': 'bg-dessert', 'суп': 'bg-soup', 'салат': 'bg-salad',
-        'холодная закуска': 'bg-cold-snack', 'горячая закуска': 'bg-hot-snack',
-        'выпечка сладкая': 'bg-sweet-pastry', 'выпечка не сладкая': 'bg-savory-pastry',
-        'вторые блюда': 'bg-main', 'гарниры': 'bg-side'
-      };
-      let bgClass = 'bg-all';
-      if (currentView === 'wishlist') {
-        bgClass = 'bg-wishlist';
-      } else if (categoryFilter.value !== 'all') {
-        bgClass = bgMap[categoryFilter.value] || 'bg-all';
-      }
-      document.body.className = bgClass;
-      if (localStorage.getItem('largeFont') === '1') document.body.classList.add('large-font');
-    }
-
-    function getRating(r) {
-      const reviews = r.reviews || [];
-      if (reviews.length === 0) return { avg: null, count: 0 };
-      const sum = reviews.reduce((acc, rev) => acc + (rev.stars || 0), 0);
-      return { avg: Math.round((sum / reviews.length) * 10) / 10, count: reviews.length };
-    }
-
-    function starsText(n) {
-      if (!n) return '';
-      const full = Math.round(n);
-      return '★'.repeat(full) + '☆'.repeat(5 - full);
-    }
-
-    function compressImage(file, maxWidth = 700, quality = 0.55) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            let w = img.width;
-            let h = img.height;
-            if (w > maxWidth) {
-              h = Math.round((h * maxWidth) / w);
-              w = maxWidth;
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.onerror = reject;
-          img.src = e.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function compressImages(files) {
-      const limit = Math.min(files.length, 4);
-      if (files.length > 4) {
-        alert('Максимум 4 фото — взяты первые 4.');
-      }
-      const result = [];
-      for (let i = 0; i < limit; i++) {
-        result.push(await compressImage(files[i]));
-      }
-      return result;
-    }
-
-    // --- Авторизация ---
-    loginBtn.addEventListener('click', async () => {
-      const email = loginEmail.value.trim();
-      const password = loginPassword.value.trim();
-      if (!email || !password) {
-        loginError.style.display = 'block';
-        loginError.textContent = 'Введите email и пароль';
-        return;
-      }
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (e) {
-        loginError.style.display = 'block';
-        loginError.textContent = 'Неверный email или пароль';
-      }
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      stopSpeech();
-      stopDictation();
-      stopGlobalTimer();
-      unlockScreen();
-      await signOut(auth);
-    });
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginScreen.style.display = 'none';
-        appDiv.style.display = 'block';
-        applyLargeFont();
-        applyBackground();
-        startRealtime();
-      } else {
-        loginScreen.style.display = 'flex';
-        appDiv.style.display = 'none';
-        stopSpeech();
-        stopDictation();
-        stopGlobalTimer();
-        unlockScreen();
-        loginEmail.value = '';
-        loginPassword.value = '';
-      }
-    });
-
-    // --- Реалтайм ---
-    let unsubRecipes = null;
-    let unsubWishlist = null;
-
-    function startRealtime() {
-      if (unsubRecipes) unsubRecipes();
-      if (unsubWishlist) unsubWishlist();
-
-      unsubRecipes = onSnapshot(query(recipesCol, orderBy('createdAt', 'desc')), (snap) => {
-        allRecipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        if (currentView === 'recipes') renderList();
-      }, (err) => {
-        console.error('Ошибка реалтайма (recipes):', err);
-        recipesList.innerHTML = '<p style="color:red;">Ошибка загрузки. Проверьте права Firestore.</p>';
-      });
-
-      unsubWishlist = onSnapshot(query(wishlistCol, orderBy('createdAt', 'desc')), (snap) => {
-        allWishlist = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        if (currentView === 'wishlist') renderList();
-      }, (err) => {
-        console.error('Ошибка реалтайма (wishlist):', err);
-      });
-    }
-
-    // --- Вкладки ---
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentView = tab.getAttribute('data-view');
-        cancelEdit();
-        applyBackground();
-        favToggle.style.display = currentView === 'wishlist' ? 'none' : 'flex';
-        renderList();
-      });
-    });
-
-    // --- Поиск ---
-    function matchesSearch(r, term) {
-      if (!term) return true;
-      const haystack = [
-        r.title || '',
-        r.steps || '',
-        r.ingredientsShort || ''
-      ].join(' ').toLowerCase();
-      return haystack.includes(term);
-    }
-
-    function emptyStateHtml(icon, text) {
-      return `<div class="empty-state"><div class="es-icon">${icon}</div><p>${text}</p></div>`;
-    }
-
-    function renderList() {
-      const data = currentView === 'recipes' ? allRecipes : allWishlist;
-      const selected = categoryFilter.value;
-      const term = searchInput.value.trim().toLowerCase();
-
-      let filtered = data;
-      if (currentView === 'recipes' && selected !== 'all') {
-        filtered = filtered.filter(r => r.category === selected);
-      }
-      if (currentView === 'recipes' && favOnly.checked) {
-        filtered = filtered.filter(r => r.favorite === true);
-      }
-      filtered = filtered.filter(r => matchesSearch(r, term));
-
-      recipesList.innerHTML = '';
-      if (filtered.length === 0) {
-        if (term) {
-          recipesList.innerHTML = emptyStateHtml('🔍', 'Ничего не нашлось — даже поварёнок не помог.<br>Попробуйте другое слово 🙂');
-        } else if (currentView === 'wishlist') {
-          recipesList.innerHTML = emptyStateHtml('📋', 'Пока ничего не запланировано.<br>Нажмите ☆ на приглянувшемся рецепте — или добавьте новый!');
-        } else if (favOnly.checked) {
-          recipesList.innerHTML = emptyStateHtml('⭐', 'В избранном пусто — нажимайте ☆ на карточках,<br>чтобы собрать свою золотую коллекцию.');
-        } else if (selected !== 'all') {
-          recipesList.innerHTML = emptyStateHtml('🍽️', 'В этой категории пока пусто.<br>Добавьте рецепт — и она оживёт!');
-        } else {
-          recipesList.innerHTML = emptyStateHtml('🍳', 'Здесь пока пусто — как сковородка перед завтраком.<br>Добавьте первый рецепт!');
-        }
-        return;
-      }
-
-      filtered.forEach((r, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card recipe-card' + (r.cooked ? ' cooked' : '');
-        card.style.animationDelay = Math.min(idx * 60, 480) + 'ms';
-
-        const catClass = getCategoryClass(r.category);
-        const catEmoji = getCategoryEmoji(r.category);
-        const { avg, count } = getRating(r);
-        const ratingHtml = avg
-          ? `<div class="rating-line">${starsText(avg)} <span class="rating-count">${avg} · оценок: ${count}</span></div>`
-          : '';
-        const badges = [];
-        if (r.favorite) badges.push('<span class="fav-badge">⭐ В избранном</span>');
-        if (r.cooked) badges.push('<span class="cooked-badge">Уже пробовали ✅</span>');
-        const isRecipes = currentView === 'recipes';
-        const images = getImages(r);
-
-        const mainImg = images[0]
-          ? `<div class="polaroid"><img src="${images[0]}" alt="Фото блюда">${addedDateStr(r) ? `<div class="polaroid-caption">${escapeHtml(addedDateStr(r))}</div>` : ''}</div>`
-          : '';
-        const stripHtml = images.length > 1
-          ? `<div class="photo-strip">${images.slice(1).map(src => `<img src="${src}" alt="Фото блюда">`).join('')}</div>`
-          : '';
-
-        card.innerHTML = `
-          <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
-          <h3>${escapeHtml(r.title)} ${badges.join(' ')}</h3>
-          ${ratingHtml}
-          ${mainImg}
-          ${stripHtml}
-          ${ingredientsToHtml(r.ingredientsShort)}
-          <div class="meta">${r.link ? `<a href="${escapeHtml(r.link)}" target="_blank">Источник</a>` : ''}</div>
-          <p>${escapeHtml(r.steps).replace(/\n/g, '<br>')}</p>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            ${isRecipes ? `<button class="icon-btn favCardBtn" data-id="${r.id}" title="Избранное">${r.favorite ? '⭐' : '☆'}</button>` : ''}
-            ${isRecipes ? `<button class="icon-btn cookedCardBtn" data-id="${r.id}" title="Уже приготовили">${r.cooked ? '✓' : '☐'}</button>` : ''}
-            <button class="edit-btn editRecipeBtn" data-id="${r.id}">Редактировать</button>
-            <button class="delete-btn deleteRecipeBtn" data-id="${r.id}">Удалить</button>
-          </div>
-        `;
-
-        card.addEventListener('click', (e) => {
-          if (e.target.closest('button') || e.target.closest('a')) return;
-          openRecipe(r.id);
-        });
-
-        recipesList.appendChild(card);
-      });
-
-      document.querySelectorAll('.editRecipeBtn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          startEdit(btn.getAttribute('data-id'));
-        });
-      });
-      document.querySelectorAll('.deleteRecipeBtn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          if (confirm('Удалить рецепт?')) {
-            await deleteRecipe(btn.getAttribute('data-id'));
-          }
-        });
-      });
-      document.querySelectorAll('.favCardBtn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggleFavorite(btn.getAttribute('data-id'));
-        });
-      });
-      document.querySelectorAll('.cookedCardBtn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute('data-id');
-          const r = allRecipes.find(x => x.id === id);
-          const turningOn = r && !r.cooked;
-          toggleCooked(id);
-          if (turningOn) {
-            const rect = btn.getBoundingClientRect();
-            launchConfetti(rect.left + rect.width / 2, rect.top);
-          }
-        });
-      });
-    }
-
-    categoryFilter.addEventListener('change', () => {
-      applyBackground();
-      renderList();
-    });
-    searchInput.addEventListener('input', renderList);
-    favOnly.addEventListener('change', () => {
-      favToggle.classList.toggle('active', favOnly.checked);
-      renderList();
-    });
-
-    // --- Избранное и «Приготовил» ---
-    async function toggleFavorite(id) {
-      const r = allRecipes.find(x => x.id === id);
-      if (!r) return;
-      try {
-        await setDoc(doc(db, 'recipes', id), { favorite: !r.favorite }, { merge: true });
-      } catch (e) {
-        console.error(e);
-        alert('Не удалось обновить избранное');
-      }
-    }
-
-    async function toggleCooked(id) {
-      const r = allRecipes.find(x => x.id === id);
-      if (!r) return;
-      try {
-        await setDoc(doc(db, 'recipes', id), {
-          cooked: !r.cooked,
-          cookedAt: !r.cooked ? new Date() : null
-        }, { merge: true });
-      } catch (e) {
-        console.error(e);
-        alert('Не удалось обновить отметку');
-      }
-    }
-
-    // --- Редактирование ---
-    function startEdit(id) {
-      const data = currentView === 'recipes' ? allRecipes : allWishlist;
-      const r = data.find(x => x.id === id);
-      if (!r) { alert('Рецепт не найден'); return; }
-
-      editingId = id;
-      editingCollection = currentView === 'recipes' ? 'recipes' : 'wishlist';
-      editingImages = getImages(r);
-
-      stopSpeech();
-      stopDictation();
-      stopGlobalTimer();
-      cookMode.style.display = 'none';
-      cookState = null;
-      modal.style.display = 'none';
-
-      titleInput.value = r.title || '';
-      categoryInput.value = r.category || '';
-      ingredientsInput.value = r.ingredientsShort || '';
-      stepsInput.value = r.steps || '';
-      linkInput.value = r.link || '';
-      imageInput.value = '';
-      updateIngHint();
-
-      formTitle.textContent = 'Редактировать рецепт';
-      editNotice.style.display = 'block';
-      addRecipeBtn.textContent = 'Сохранить изменения';
-      cancelEditBtn.style.display = 'block';
-
-      document.getElementById('addFormCard').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function cancelEdit() {
-      editingId = null;
-      editingCollection = null;
-      editingImages = [];
-
-      stopDictation();
-
-      titleInput.value = '';
-      categoryInput.selectedIndex = 0;
-      ingredientsInput.value = '';
-      stepsInput.value = '';
-      linkInput.value = '';
-      imageInput.value = '';
-      updateIngHint();
-
-      formTitle.textContent = currentView === 'wishlist' ? 'Добавить в «Хочу приготовить»' : 'Добавить рецепт';
-      editNotice.style.display = 'none';
-      addRecipeBtn.textContent = currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт';
-      cancelEditBtn.style.display = 'none';
-    }
-
-    cancelEditBtn.addEventListener('click', cancelEdit);
-
-    // --- Добавление / сохранение ---
-    async function addRecipe() {
-      stopDictation();
-
-      const title = titleInput.value.trim();
-      const category = categoryInput.value;
-      const ingredientsShort = formatIngredients(ingredientsInput.value);
-      const steps = formatSteps(stepsInput.value);
-      const link = linkInput.value.trim();
-
-      if (!title || !category || !steps) {
-        alert('Заполните название, категорию и шаги');
-        return;
-      }
-
-      let newImages = null;
-      if (imageInput.files.length > 0) {
-        addRecipeBtn.textContent = 'Обрабатываем фото…';
-        try {
-          newImages = await compressImages(imageInput.files);
-        } catch (e) {
-          console.error('Ошибка сжатия:', e);
-          alert('Не удалось обработать фото. Попробуйте другие.');
-          addRecipeBtn.textContent = editingId ? 'Сохранить изменения'
-            : (currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт');
-          return;
-        }
-      }
-
-      addRecipeBtn.textContent = 'Сохраняем…';
-
-      if (editingId) {
-        const docRef = doc(db, editingCollection, editingId);
-        const updates = { title, category, ingredientsShort, steps, link };
-        if (newImages !== null && newImages.length > 0) {
-          updates.imagesBase64 = newImages;
-          updates.imageBase64 = newImages[0] || '';
-        } else if (editingImages.length > 0) {
-          updates.imagesBase64 = editingImages;
-          updates.imageBase64 = editingImages[0] || '';
-        }
-        await setDoc(docRef, updates, { merge: true });
-        cancelEdit();
-      } else {
-        const targetCol = currentView === 'wishlist' ? wishlistCol : recipesCol;
-        await addDoc(targetCol, {
-          title, category, ingredientsShort, steps, link,
-          imageBase64: (newImages && newImages[0]) || '',
-          imagesBase64: newImages || [],
-          favorite: false, cooked: false,
-          createdAt: new Date(), reviews: []
-        });
-        cancelEdit();
-      }
-
-      addRecipeBtn.textContent = currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт';
-    }
-
-    // --- Удаление ---
-    async function deleteRecipe(id) {
-      const col = currentView === 'wishlist' ? wishlistCol : recipesCol;
-      try {
-        if (editingId === id) cancelEdit();
-        await deleteDoc(doc(db, col.path, id));
-        if (currentRecipeId === id) closeModal();
-      } catch (e) {
-        console.error(e);
-        alert('Не удалось удалить рецепт');
-      }
-    }
-
-    // --- Открытие рецепта ---
-    async function openRecipe(id) {
-      currentRecipeId = id;
-      currentCollection = currentView === 'wishlist' ? 'wishlist' : 'recipes';
-
-      try {
-        const docRef = doc(db, currentCollection, id);
-        const recipeDoc = await getDoc(docRef);
-        if (!recipeDoc.exists()) { alert('Рецепт не найден'); return; }
-        const r = recipeDoc.data();
-        currentRecipeData = r;
-        const images = getImages(r);
-
-        modalTitle.textContent = r.title || '';
-        modalImage.src = images[0] || '';
-        modalImage.style.display = images.length ? 'block' : 'none';
-
-        modalGallery.innerHTML = '';
-        if (images.length > 1) {
-          images.forEach((src, i) => {
-            const thumb = document.createElement('img');
-            thumb.src = src;
-            if (i === 0) thumb.classList.add('selected');
-            thumb.addEventListener('click', () => {
-              modalImage.src = src;
-              modalGallery.querySelectorAll('img').forEach(t => t.classList.remove('selected'));
-              thumb.classList.add('selected');
-            });
-            modalGallery.appendChild(thumb);
-          });
-        }
-
-        // Сброс пересчёта порций при каждом открытии
-        modalIngredients.innerHTML = ingredientsToHtml(r.ingredientsShort) || '';
-        portTo.value = '';
-        modalSteps.innerHTML = renderStepsHtml(r.steps);
-        modalMeta.textContent = r.link ? `Источник: ${escapeHtml(r.link)}` : '';
-
-        doneBtn.style.display = currentCollection === 'wishlist' ? 'block' : 'none';
-        favModalBtn.style.display = currentCollection === 'recipes' ? 'block' : 'none';
-        cookedModalBtn.style.display = currentCollection === 'recipes' ? 'block' : 'none';
-        favModalBtn.textContent = r.favorite ? '⭐' : '☆';
-        favModalBtn.classList.toggle('fav-active', !!r.favorite);
-        cookedModalBtn.textContent = r.cooked ? '✓' : '☐';
-        cookedModalBtn.classList.toggle('cooked-active', !!r.cooked);
-
-        selectedStars = 0;
-        updateStarsUI();
-        renderReviews(r.reviews || []);
-        stopSpeech();
-        stopGlobalTimer();
-        modal.style.display = 'block';
-        modal.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (e) {
-        console.error(e);
-        alert('Ошибка при открытии рецепта');
-      }
-    }
-
-    function closeModal() {
-      stopSpeech();
-      stopGlobalTimer();
-      modal.style.display = 'none';
-      currentRecipeId = null;
-      currentRecipeData = null;
-    }
-    closeModalBtn.addEventListener('click', closeModal);
-
-    editFromModalBtn.addEventListener('click', () => {
-      if (!currentRecipeId) return;
-      startEdit(currentRecipeId);
-    });
-
-    favModalBtn.addEventListener('click', async () => {
-      if (!currentRecipeId || currentCollection !== 'recipes') return;
-      const r = allRecipes.find(x => x.id === currentRecipeId);
-      if (!r) return;
-      await toggleFavorite(currentRecipeId);
-      favModalBtn.textContent = !r.favorite ? '⭐' : '☆';
-      favModalBtn.classList.toggle('fav-active', !r.favorite);
-    });
-
-    cookedModalBtn.addEventListener('click', async () => {
-      if (!currentRecipeId || currentCollection !== 'recipes') return;
-      const r = allRecipes.find(x => x.id === currentRecipeId);
-      if (!r) return;
-      const turningOn = !r.cooked;
-      await toggleCooked(currentRecipeId);
-      cookedModalBtn.textContent = !r.cooked ? '✓' : '☐';
-      cookedModalBtn.classList.toggle('cooked-active', !r.cooked);
-      if (turningOn) {
-        const rect = cookedModalBtn.getBoundingClientRect();
-        launchConfetti(rect.left + rect.width / 2, rect.top);
-      }
-    });
-
-    // --- Рейтинг ---
-    function updateStarsUI() {
-      starsInput.querySelectorAll('button').forEach(btn => {
-        const n = parseInt(btn.getAttribute('data-star'), 10);
-        btn.classList.toggle('active', n <= selectedStars);
-      });
-    }
-
-    starsInput.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectedStars = parseInt(btn.getAttribute('data-star'), 10);
-        updateStarsUI();
-        starsInput.querySelectorAll('button').forEach((b, i) => {
-          const n = parseInt(b.getAttribute('data-star'), 10);
-          if (n <= selectedStars) {
-            setTimeout(() => {
-              b.classList.remove('pop');
-              void b.offsetWidth;
-              b.classList.add('pop');
-              setTimeout(() => b.classList.remove('pop'), 450);
-            }, i * 90);
-          }
-        });
-      });
-    });
-
-    async function addReview() {
-      const name = reviewName.value.trim();
-      const text = reviewText.value.trim();
-      if (!selectedStars) { alert('Выберите звёзды от 1 до 5'); return; }
-      if (!name) { alert('Укажите имя'); return; }
-      if (!currentRecipeId) return;
-
-      const docRef = doc(db, currentCollection, currentRecipeId);
-      const recipeDoc = await getDoc(docRef);
-      if (!recipeDoc.exists()) { alert('Рецепт не найден'); closeModal(); return; }
-
-      const reviews = recipeDoc.data().reviews || [];
-      reviews.push({ name, stars: selectedStars, text, date: new Date() });
-      await setDoc(docRef, { reviews }, { merge: true });
-
-      reviewName.value = '';
-      reviewText.value = '';
-      selectedStars = 0;
-      updateStarsUI();
-      openRecipe(currentRecipeId);
-    }
-
-    function renderReviews(reviews) {
-      const { avg, count } = getRating({ reviews });
-      let header = avg
-        ? `<div class="rating-line">${starsText(avg)} <span class="rating-count">${avg} из 5 · оценок: ${count}</span></div>`
-        : '<p>Ещё нет оценок — поставьте первую!</p>';
-      const items = reviews.slice().reverse().map(rev => {
-        let dateStr = '';
-        try { dateStr = new Date(rev.date.seconds ? rev.date.seconds * 1000 : rev.date).toLocaleDateString(); } catch(e) {}
-        return `<div class="review-item">
-          <span class="review-stars">${starsText(rev.stars)}</span>
-          <b>${escapeHtml(rev.name)}</b> <small>${dateStr}</small><br>
-          ${rev.text ? escapeHtml(rev.text) : '<small>без отзыва</small>'}
-        </div>`;
-      }).join('');
-      reviewsList.innerHTML = header + items;
-    }
-
-    // --- Перенос wishlist -> recipes (общая функция) ---
-    async function moveWishlistToRecipes(id) {
-      const docRef = doc(db, 'wishlist', id);
-      const recipeDoc = await getDoc(docRef);
-      if (!recipeDoc.exists()) { alert('Рецепт не найден'); return false; }
-      const r = recipeDoc.data();
-      const images = getImages(r);
-
-      await addDoc(recipesCol, {
-        title: r.title, category: r.category, ingredientsShort: r.ingredientsShort || '',
-        steps: r.steps, link: r.link,
-        imageBase64: images[0] || '',
-        imagesBase64: images,
-        favorite: r.favorite || false, cooked: true, cookedAt: new Date(),
-        createdAt: new Date(), reviews: r.reviews || []
-      });
-
-      await deleteDoc(docRef);
-      return true;
-    }
-
-    doneBtn.addEventListener('click', async () => {
-      if (!currentRecipeId || currentCollection !== 'wishlist') return;
-      try {
-        const ok = await moveWishlistToRecipes(currentRecipeId);
-        if (ok) {
-          const rect = doneBtn.getBoundingClientRect();
-          launchConfetti(rect.left + rect.width / 2, rect.top);
-          closeModal();
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Не удалось переместить рецепт');
-      }
-    });
-
-    // --- Обработчики ---
-    addRecipeBtn.addEventListener('click', addRecipe);
-    addReviewBtn.addEventListener('click', addReview);
-  </script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .catch((err) => console.warn('SW не зарегистрировался:', err));
-    });
-  }
+<!-- Индикатор загрузки: виден сразу, исчезает при запуске приложения -->
+<div id="appLoader" style="display:flex; position:fixed; inset:0; z-index:5000; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:#fdf6e3; font-family:sans-serif; color:#7a4a1f;">
+<div style="font-size:3em; animation: loaderSpin 2s linear infinite;">🍳</div>
+<div>Разогреваем плиту…</div>
+</div>
+<style>@keyframes loaderSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }</style>
+
+<!-- Сообщение об ошибке загрузки (показывается, если Firebase недоступен) -->
+<div id="loadError" style="display:none; max-width:420px; margin:60px auto; padding:24px; background:#fff; border:1px solid #d9534f; border-radius:12px; text-align:center; font-family:sans-serif; position:relative; z-index:1;">
+<div style="font-size:2.5em;">📡</div>
+<h3 style="margin:8px 0;">Не получилось загрузить компоненты</h3>
+<p style="color:#555; font-size:0.95em;">Похоже, нет доступа к серверам Firebase. Проверьте интернет и обновите страницу. Если не помогает — попробуйте другую сеть (например, мобильный интернет вместо Wi-Fi).</p>
+</div>
+
+<!-- Экран входа -->
+<div id="loginScreen" class="login-screen" style="display:none;">
+<div class="login-card">
+<h2>Вход в семейные рецепты</h2>
+<div id="loginError" class="login-error">Неверный email или пароль</div>
+<input id="loginEmail" type="email" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Пароль">
+<button id="loginBtn">Войти</button>
+</div>
+</div>
+
+<!-- Основное приложение -->
+<div id="app" style="display:none; position:relative; z-index:1;">
+<div class="kitchen-banner">
+<div class="pot-line"><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>🍲</div>
+<h1>Семейные рецепты</h1>
+<div class="banner-note">книга нашей семьи</div>
+<div class="gingham"></div>
+</div>
+
+<div class="header-actions-row">
+<button id="randomBtn" class="ghost-btn" title="Покажет случайный рецепт">🎲 Что сегодня?</button>
+<button id="fontBtn" class="ghost-btn" title="Крупный шрифт для чтения без очков">📖 Крупный шрифт</button>
+<button id="logoutBtn" class="logout-btn">Выйти</button>
+</div>
+
+<div class="tabs">
+<button class="tab-btn active" data-view="recipes">Все рецепты</button>
+<button class="tab-btn" data-view="wishlist">Хочу приготовить</button>
+</div>
+
+<div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+<input id="searchInput" placeholder="Поиск: название, ингредиент, шаг…" style="flex:1; min-width:180px; margin-bottom:0;">
+<select id="categoryFilter" style="max-width:200px; margin-bottom:0;">
+<option value="all">Все категории</option>
+<option value="десерт">🍰 Десерт</option>
+<option value="суп">🍲 Суп</option>
+<option value="салат">🥗 Салат</option>
+<option value="холодная закуска">🧀 Холодная закуска</option>
+<option value="горячая закуска">🥘 Горячая закуска</option>
+<option value="выпечка сладкая">🧁 Выпечка сладкая</option>
+<option value="выпечка не сладкая">🥐 Выпечка несладкая</option>
+<option value="вторые блюда">🍖 Вторые блюда</option>
+<option value="гарниры">🍚 Гарниры</option>
+</select>
+<label class="favorites-toggle" id="favToggle" title="Показывать только избранные">
+<input type="checkbox" id="favOnly"> ⭐ Избранное
+</label>
+</div>
+
+<!-- Форма добавления / редактирования -->
+<div class="card" id="addFormCard" style="cursor:default;">
+<h3 id="formTitle">Добавить рецепт</h3>
+<div id="editNotice" class="edit-notice">Режим редактирования: меняйте поля и нажмите «Сохранить изменения».</div>
+<input id="recipeTitle" placeholder="Название блюда">
+<select id="recipeCategory" required>
+<option value="" disabled selected>Выберите категорию</option>
+<option value="десерт">🍰 Десерт</option>
+<option value="суп">🍲 Суп</option>
+<option value="салат">🥗 Салат</option>
+<option value="холодная закуска">🧀 Холодная закуска</option>
+<option value="горячая закуска">🥘 Горячая закуска</option>
+<option value="выпечка сладкая">🧁 Выпечка сладкая</option>
+<option value="выпечка не сладкая">🥐 Выпечка несладкая</option>
+<option value="вторые блюда">🍖 Вторые блюда</option>
+<option value="гарниры">🍚 Гарниры</option>
+</select>
+<div class="dictation-row">
+<textarea id="recipeIngredients" placeholder="Ингредиенты: напишите или нажмите 🎤 и продиктуйте" rows="3"></textarea>
+<button id="micIngredients" class="mic-btn" title="Диктовать ингредиенты голосом">🎤</button>
+</div>
+<div class="dictation-hint" id="dictIngredientsHint"></div>
+<div class="ing-hint" id="ingHint"></div>
+<div class="dictation-row">
+<textarea id="recipeSteps" placeholder="Шаги приготовления: напишите или нажмите 🎤 и диктуйте по шагам" rows="4"></textarea>
+<button id="micSteps" class="mic-btn" title="Диктовать шаги голосом">🎤</button>
+</div>
+<div class="dictation-hint" id="dictStepsHint"></div>
+<input id="recipeLink" placeholder="Ссылка на источник (если есть)">
+<input type="file" id="recipeImage" accept="image/*" multiple>
+<small style="display:block; margin-bottom:8px; color:#777;">Можно выбрать до 4 фото: первое станет главным, остальные — подсказками к шагам.</small>
+<button id="addRecipeBtn">Добавить рецепт</button>
+<button id="cancelEditBtn" style="background:#6c757d; display:none;">Отменить редактирование</button>
+</div>
+
+<div id="recipesList"></div>
+
+<!-- Модалка рецепта -->
+<div id="recipeModal" class="card" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.98); z-index:1000; overflow-y:auto; max-width:none; margin:0; border-radius:0; cursor:default;">
+<div style="padding:16px; max-width:700px; margin:0 auto;">
+<h2 id="modalTitle"></h2>
+<img id="modalImage" style="max-height:320px; width:100%; object-fit:contain; background:#f7f4ee; border:1px solid rgba(122,74,31,0.15); border-radius:8px;">
+<div class="modal-gallery" id="modalGallery"></div>
+
+<div class="portions-box" id="portionsBox">
+<span style="font-weight:700;">Порций:</span>
+<input id="portFrom" type="number" min="1" value="4" title="Сейчас в рецепте">
+<span>→</span>
+<input id="portTo" type="number" min="1" placeholder="2" title="Сколько нужно">
+<button id="scaleBtn">Пересчитать</button>
+</div>
+
+<div id="modalIngredients" style="margin:12px 0;"></div>
+<div id="modalSteps" style="margin:16px 0;"></div>
+<div class="meta" id="modalMeta"></div>
+<hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+
+<button id="cookModeBtn" style="width:100%; margin-bottom:10px; background:#e67e22;">🍳 Режим готовки</button>
+<button id="ttsBtn" class="ghost-btn" style="width:100%; margin-bottom:12px;">🔊 Читать вслух</button>
+
+<div style="display:flex; gap:8px; flex-wrap:wrap;">
+<button id="editFromModalBtn" class="edit-btn" style="flex:1;">Редактировать</button>
+<button id="favModalBtn" class="icon-btn">☆</button>
+<button id="cookedModalBtn" class="icon-btn">✓</button>
+</div>
+<button id="doneBtn" class="done-btn" style="width:100%; display:none; margin-top:8px;">Приготовил — вернуть в рецепты</button>
+
+<h4>Оценка блюда</h4>
+<div class="stars-input" id="starsInput">
+<button data-star="1">★</button>
+<button data-star="2">★</button>
+<button data-star="3">★</button>
+<button data-star="4">★</button>
+<button data-star="5">★</button>
+</div>
+<input id="reviewName" placeholder="Ваше имя">
+<textarea id="reviewText" placeholder="Отзыв после готовки: «супер, повторим», «слишком остро»…" rows="2"></textarea>
+<button id="addReviewBtn">Оставить оценку</button>
+<div id="reviewsList"></div>
+
+<hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+<button id="closeModalBtn" style="float:right;">Закрыть</button>
+</div>
+</div>
+</div>
+
+<!-- РЕЖИМ ГОТОВКИ -->
+<div id="cookMode" class="cook-mode">
+<div class="cook-top">
+<div class="cook-dish" id="cookDishName"></div>
+<button id="cookExitBtn" class="cook-exit">✕ Выйти</button>
+</div>
+<div class="cook-dots" id="cookDots"></div>
+<div class="cook-stepnum" id="cookStepNum"></div>
+<div class="cook-text" id="cookStepText"></div>
+<div class="cook-timer-area" id="cookTimerArea"></div>
+<div class="cook-controls">
+<button id="cookPrevBtn">← Назад</button>
+<button id="cookNextBtn">Далее →</button>
+</div>
+</div>
+
+<!-- Глобальный таймер -->
+<div id="timerBanner" class="timer-banner">
+<div>
+<div class="tb-label">Таймер</div>
+<div class="tb-time" id="timerTime">0:00</div>
+</div>
+<button id="timerStopBtn">Стоп</button>
+</div>
+
+<script type="module">
+// Загрузка Firebase: три источника, таймаут, индикатор
+let firebaseAppMod, firestoreMod, authMod;
+const CDN_SOURCES = [
+"https://www.gstatic.com/firebasejs/12.19.0/",
+"https://cdn.jsdelivr.net/npm/firebase@12.19.0/",
+"https://unpkg.com/firebase@12.19.0/"
+];
+const FB_FILES = ["firebase-app.js", "firebase-firestore.js", "firebase-auth.js"];
+
+function importWithTimeout(url, ms = 8000) {
+return Promise.race([
+import(url),
+new Promise((_, rej) => setTimeout(() => rej(new Error('Таймаут: ' + url)), ms))
+]);
+}
+
+async function loadFirebase() {
+let lastError = null;
+for (const base of CDN_SOURCES) {
+try {
+console.log('Пробую источник:', base);
+const mods = await Promise.all(FB_FILES.map(f => importWithTimeout(base + f)));
+firebaseAppMod = mods[0];
+firestoreMod = mods[1];
+authMod = mods[2];
+return;
+} catch (e) {
+lastError = e;
+console.warn('Источник не ответил за 8 секунд, пробую следующий:', base);
+}
+}
+document.getElementById('appLoader').style.display = 'none';
+document.getElementById('loadError').style.display = 'block';
+throw lastError;
+}
+
+await loadFirebase();
+document.getElementById('appLoader').style.display = 'none';
+
+const { initializeApp } = firebaseAppMod;
+const { getFirestore, collection, addDoc, doc, setDoc, getDoc, deleteDoc, onSnapshot, query, orderBy } = firestoreMod;
+const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = authMod;
+
+const firebaseConfig = {
+apiKey: "AIzaSyANI2kBCdtQiKgf_tTdm-9AdJw17DRtKPs",
+authDomain: "recepts-928b8.firebaseapp.com",
+projectId: "recepts-928b8",
+storageBucket: "recepts-928b8.firebasestorage.app",
+messagingSenderId: "253494978690",
+appId: "1:253494978690:web:ff09676a79843aa6712c9b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const recipesCol = collection(db, 'recipes');
+const wishlistCol = collection(db, 'wishlist');
+
+// --- DOM ---
+const loginScreen = document.getElementById('loginScreen');
+const appDiv = document.getElementById('app');
+const loginBtn = document.getElementById('loginBtn');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const fontBtn = document.getElementById('fontBtn');
+const randomBtn = document.getElementById('randomBtn');
+
+const titleInput = document.getElementById('recipeTitle');
+const categoryInput = document.getElementById('recipeCategory');
+const ingredientsInput = document.getElementById('recipeIngredients');
+const ingHint = document.getElementById('ingHint');
+const dictIngredientsHint = document.getElementById('dictIngredientsHint');
+const stepsInput = document.getElementById('recipeSteps');
+const dictStepsHint = document.getElementById('dictStepsHint');
+const linkInput = document.getElementById('recipeLink');
+const imageInput = document.getElementById('recipeImage');
+const addRecipeBtn = document.getElementById('addRecipeBtn');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const editNotice = document.getElementById('editNotice');
+const categoryFilter = document.getElementById('categoryFilter');
+const searchInput = document.getElementById('searchInput');
+const favOnly = document.getElementById('favOnly');
+const favToggle = document.getElementById('favToggle');
+const recipesList = document.getElementById('recipesList');
+const formTitle = document.getElementById('formTitle');
+
+const modal = document.getElementById('recipeModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalImage = document.getElementById('modalImage');
+const modalGallery = document.getElementById('modalGallery');
+const modalIngredients = document.getElementById('modalIngredients');
+const modalSteps = document.getElementById('modalSteps');
+const modalMeta = document.getElementById('modalMeta');
+const doneBtn = document.getElementById('doneBtn');
+const editFromModalBtn = document.getElementById('editFromModalBtn');
+const favModalBtn = document.getElementById('favModalBtn');
+const cookedModalBtn = document.getElementById('cookedModalBtn');
+const ttsBtn = document.getElementById('ttsBtn');
+const cookModeBtn = document.getElementById('cookModeBtn');
+
+const portFrom = document.getElementById('portFrom');
+const portTo = document.getElementById('portTo');
+const scaleBtn = document.getElementById('scaleBtn');
+
+const cookMode = document.getElementById('cookMode');
+const cookDishName = document.getElementById('cookDishName');
+const cookDots = document.getElementById('cookDots');
+const cookStepNum = document.getElementById('cookStepNum');
+const cookStepText = document.getElementById('cookStepText');
+const cookTimerArea = document.getElementById('cookTimerArea');
+const cookPrevBtn = document.getElementById('cookPrevBtn');
+const cookNextBtn = document.getElementById('cookNextBtn');
+const cookExitBtn = document.getElementById('cookExitBtn');
+
+const timerBanner = document.getElementById('timerBanner');
+const timerTime = document.getElementById('timerTime');
+const timerStopBtn = document.getElementById('timerStopBtn');
+
+const starsInput = document.getElementById('starsInput');
+const reviewName = document.getElementById('reviewName');
+const reviewText = document.getElementById('reviewText');
+const addReviewBtn = document.getElementById('addReviewBtn');
+const reviewsList = document.getElementById('reviewsList');
+const closeModalBtn = document.getElementById('closeModalBtn');
+
+const micIngredients = document.getElementById('micIngredients');
+const micSteps = document.getElementById('micSteps');
+
+const tabs = document.querySelectorAll('.tab-btn');
+let currentView = 'recipes';
+let currentRecipeId = null;
+let currentCollection = 'recipes';
+let currentRecipeData = null;
+let allRecipes = [];
+let allWishlist = [];
+let selectedStars = 0;
+
+let editingId = null;
+let editingCollection = null;
+let editingImages = [];
+
+function escapeHtml(str) {
+if (!str) return '';
+return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
+}
+
+function getCategoryClass(cat) {
+const map = {
+'десерт': 'cat-dessert', 'суп': 'cat-soup', 'салат': 'cat-salad',
+'холодная закуска': 'cat-cold-snack', 'горячая закуска': 'cat-hot-snack',
+'выпечка сладкая': 'cat-sweet-pastry', 'выпечка не сладкая': 'cat-savory-pastry',
+'вторые блюда': 'cat-main', 'гарниры': 'cat-side'
+};
+return map[cat] || '';
+}
+
+function getCategoryEmoji(cat) {
+const map = {
+'десерт': '🍰', 'суп': '🍲', 'салат': '🥗',
+'холодная закуска': '🧀', 'горячая закуска': '🥘',
+'выпечка сладкая': '🧁', 'выпечка не сладкая': '🥐',
+'вторые блюда': '🍖', 'гарниры': '🍚'
+};
+return map[cat] || '🍽️';
+}
+
+function getImages(r) {
+const arr = Array.isArray(r.imagesBase64) ? r.imagesBase64.filter(Boolean) : [];
+if (arr.length === 0 && r.imageBase64) arr.push(r.imageBase64);
+return arr;
+}
+
+function addedDateStr(r) {
+try {
+if (r.createdAt && r.createdAt.seconds) return new Date(r.createdAt.seconds * 1000).toLocaleDateString('ru-RU');
+if (r.createdAt) return new Date(r.createdAt).toLocaleDateString('ru-RU');
+} catch (e) {}
+return '';
+}
+
+function ingredientsToHtml(raw) {
+if (!raw || !raw.trim()) return '';
+const items = raw
+.split(/[,\n]/)
+.map(s => s.trim())
+.filter(s => s.length > 0);
+if (items.length === 0) return '';
+return `<b>🥕 Ингредиенты:</b><ul class="ingredients-list">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
+}
+
+// --- Таймеры в шагах ---
+function parseTime(text) {
+const m = text.match(/(\d+)\s*(мин|минут[аы]?|сек|секунд[аы]?|час[аов]?|ч\b)/i);
+if (!m) return null;
+const n = parseInt(m[1], 10);
+const u = m[2].toLowerCase();
+if (u.startsWith('сек')) return n;
+if (u.startsWith('час') || u === 'ч') return n * 3600;
+return n * 60;
+}
+
+function fmtTime(sec) {
+const h = Math.floor(sec / 3600);
+const m = Math.floor((sec % 3600) / 60);
+const s = sec % 60;
+if (h) return (m ? `${h} ч ${m} мин` : `${h} ч`);
+if (m) return `${m} мин`;
+return `${s} сек`;
+}
+
+function renderStepsHtml(raw) {
+if (!raw || !raw.trim()) return '';
+return raw.split('\n').filter(s => s.trim()).map(line => {
+const t = parseTime(line);
+const esc = escapeHtml(line);
+return `<div class="step-line">${esc}${t ? ` <button class="timer-inline" data-sec="${t}">⏱ ${fmtTime(t)}</button>` : ''}</div>`;
+}).join('');
+}
+
+let timerInterval = null;
+function stopGlobalTimer() {
+if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+timerBanner.style.display = 'none';
+}
+
+function beep() {
+try {
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const o = ctx.createOscillator();
+const g = ctx.createGain();
+o.connect(g); g.connect(ctx.destination);
+o.frequency.value = 880;
+g.gain.value = 0.25;
+o.start();
+setTimeout(() => { try { o.stop(); ctx.close(); } catch (e) {} }, 900);
+} catch (e) {}
+}
+
+function startGlobalTimer(seconds) {
+stopGlobalTimer();
+let remain = seconds;
+timerBanner.style.display = 'flex';
+const upd = () => {
+const m = Math.floor(remain / 60), s = remain % 60;
+timerTime.textContent = `${m}:${String(s).padStart(2, '0')}`;
+};
+upd();
+timerInterval = setInterval(() => {
+remain--;
+upd();
+if (remain <= 0) {
+clearInterval(timerInterval); timerInterval = null;
+timerTime.textContent = '🔔 Время вышло!';
+beep();
+try {
+const u = new SpeechSynthesisUtterance('Время вышло!');
+u.lang = 'ru-RU';
+speechSynthesis.speak(u);
+} catch (e) {}
+setTimeout(() => { timerBanner.style.display = 'none'; }, 6000);
+}
+}, 1000);
+}
+
+timerStopBtn.addEventListener('click', stopGlobalTimer);
+
+// Клик по ⏱ в модалке (делегирование)
+modal.addEventListener('click', (e) => {
+const btn = e.target.closest('.timer-inline');
+if (btn) startGlobalTimer(parseInt(btn.getAttribute('data-sec'), 10));
+});
+
+// --- Пересчёт порций ---
+function scaleIngredientsText(raw, ratio) {
+return raw.replace(/\d+(?:[.,]\d+)?/g, (m) => {
+const num = parseFloat(m.replace(',', '.'));
+const scaled = Math.round(num * ratio * 100) / 100;
+return String(scaled).replace('.', ',');
+});
+}
+
+scaleBtn.addEventListener('click', () => {
+if (!currentRecipeData) return;
+const from = parseFloat(portFrom.value) || 4;
+const to = parseFloat(portTo.value);
+if (!to || to <= 0) { alert('Укажите, на сколько порций пересчитать'); return; }
+const raw = currentRecipeData.ingredientsShort || '';
+if (!raw.trim()) { alert('В этом рецепте нет списка ингредиентов'); return; }
+const ratio = to / from;
+modalIngredients.innerHTML =
+ingredientsToHtml(scaleIngredientsText(raw, ratio)) +
+`<div class="portions-note">Пересчитано на ${to} порц. (вместо ${from}). Это только просмотр — в базе рецепт не изменился. Дробные значения (например, 0,5 ч. л.) можно округлить по вкусу.</div>`;
+});
+
+// --- Конфетти ---
+function launchConfetti(x, y) {
+const colors = ['#f39c12', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#e67e22'];
+for (let i = 0; i < 20; i++) {
+const p = document.createElement('span');
+p.className = 'confetti';
+const angle = Math.random() * Math.PI * 2;
+const dist = 60 + Math.random() * 90;
+p.style.left = x + 'px';
+p.style.top = y + 'px';
+p.style.background = colors[Math.floor(Math.random() * colors.length)];
+p.style.width = (6 + Math.random() * 6) + 'px';
+p.style.height = (6 + Math.random() * 8) + 'px';
+p.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+p.style.setProperty('--dy', (Math.sin(angle) * dist - 40) + 'px');
+p.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+document.body.appendChild(p);
+setTimeout(() => p.remove(), 1000);
+}
+}
+
+// --- Умное заполнение формы ---
+function formatIngredients(raw) {
+return raw
+.split(/[,\n]+/)
+.map(s => s.trim().replace(/^[-•\d.)\s]+/, ''))
+.filter(s => s.length > 0)
+.map(s => s.charAt(0).toUpperCase() + s.slice(1))
+.join('\n');
+}
+
+function formatSteps(raw) {
+const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+if (lines.length === 0) return raw;
+const numbered = lines.filter(l => /^\d+[.)]\s/.test(l)).length;
+if (numbered >= lines.length * 0.6) return lines.join('\n');
+return lines.map((l, i) => `${i + 1}. ${l.replace(/^[-•\s]+/, '')}`).join('\n');
+}
+
+function updateIngHint() {
+const items = ingredientsInput.value.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+if (items.length === 0) {
+ingHint.textContent = '';
+} else {
+ingHint.textContent = `🥕 ${items.length} ${items.length === 1 ? 'ингредиент' : items.length < 5 ? 'ингредиента' : 'ингредиентов'} — при выходе из поля всё красиво оформится`;
+}
+}
+ingredientsInput.addEventListener('input', updateIngHint);
+
+ingredientsInput.addEventListener('blur', () => {
+const f = formatIngredients(ingredientsInput.value);
+if (f) ingredientsInput.value = f;
+updateIngHint();
+});
+stepsInput.addEventListener('blur', () => {
+const f = formatSteps(stepsInput.value);
+if (f) stepsInput.value = f;
+});
+
+// --- Диктовка голосом ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let activeDictation = null;
+
+if (!SpeechRecognition) {
+micIngredients.style.display = 'none';
+micSteps.style.display = 'none';
+}
+
+function stopDictation() {
+if (!activeDictation) return;
+try { activeDictation.rec.stop(); } catch (e) {}
+activeDictation.btn.classList.remove('recording');
+activeDictation.btn.textContent = '🎤';
+activeDictation.hint.textContent = '';
+const f = activeDictation.mode === 'ingredients'
+? formatIngredients(activeDictation.textarea.value)
+: formatSteps(activeDictation.textarea.value);
+if (f) activeDictation.textarea.value = f;
+updateIngHint();
+activeDictation = null;
+}
+
+function startDictation(btn, textarea, hint, mode) {
+const rec = new SpeechRecognition();
+rec.lang = 'ru-RU';
+rec.continuous = true;
+rec.interimResults = false;
+rec.maxAlternatives = 1;
+
+rec.onresult = (event) => {
+for (let i = event.resultIndex; i < event.results.length; i++) {
+if (event.results[i].isFinal) {
+let text = event.results[i][0].transcript.trim();
+if (!text) continue;
+text = text.charAt(0).toUpperCase() + text.slice(1);
+const current = textarea.value.trim();
+if (mode === 'ingredients') {
+textarea.value = current ? current + ',\n' + text : text;
+} else {
+textarea.value = current ? current + '\n' + text : text;
+}
+textarea.scrollTop = textarea.scrollHeight;
+if (mode === 'ingredients') updateIngHint();
+}
+}
+};
+
+rec.onerror = (event) => {
+if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+hint.textContent = 'Нет доступа к микрофону — разрешите его в настройках браузера';
+} else if (event.error === 'no-speech') {
+hint.textContent = 'Наслушался тишины — скажите что-нибудь 🙂';
+} else {
+hint.textContent = 'Не получилось распознать речь, попробуйте ещё раз';
+}
+};
+
+rec.onend = () => {
+if (activeDictation && activeDictation.rec === rec) stopDictation();
+};
+
+try {
+rec.start();
+} catch (e) {
+hint.textContent = 'Не удалось запустить диктовку';
+return;
+}
+
+activeDictation = { rec, btn, textarea, mode, hint };
+btn.classList.add('recording');
+btn.textContent = '⏹';
+hint.textContent = '🎙️ Слушаю… говорите, я записываю. Нажмите ⏹, чтобы закончить';
+}
+
+micIngredients.addEventListener('click', () => {
+if (activeDictation) { stopDictation(); return; }
+if (!SpeechRecognition) {
+alert('Ваш браузер не поддерживает диктовку. Попробуйте Chrome или Safari.');
+return;
+}
+ingredientsInput.focus();
+startDictation(micIngredients, ingredientsInput, dictIngredientsHint, 'ingredients');
+});
+
+micSteps.addEventListener('click', () => {
+if (activeDictation) { stopDictation(); return; }
+if (!SpeechRecognition) {
+alert('Ваш браузер не поддерживает диктовку. Попробуйте Chrome или Safari.');
+return;
+}
+stepsInput.focus();
+startDictation(micSteps, stepsInput, dictStepsHint, 'steps');
+});
+
+// --- Режим крупного шрифта ---
+function applyLargeFont() {
+const on = localStorage.getItem('largeFont') === '1';
+document.body.classList.toggle('large-font', on);
+fontBtn.textContent = on ? '📖 Обычный шрифт' : '📖 Крупный шрифт';
+}
+fontBtn.addEventListener('click', () => {
+const on = localStorage.getItem('largeFont') === '1';
+localStorage.setItem('largeFont', on ? '0' : '1');
+applyLargeFont();
+});
+
+// --- Чтение вслух ---
+function stopSpeech() {
+if ('speechSynthesis' in window) speechSynthesis.cancel();
+ttsBtn.textContent = '🔊 Читать вслух';
+ttsBtn.classList.remove('tts-active');
+}
+
+ttsBtn.addEventListener('click', () => {
+if (!('speechSynthesis' in window)) {
+alert('Ваш браузер не умеет читать текст вслух');
+return;
+}
+if (speechSynthesis.speaking) {
+stopSpeech();
+return;
+}
+const parts = [modalTitle.textContent];
+if (modalIngredients.textContent.trim()) parts.push('Ингредиенты: ' + modalIngredients.textContent);
+if (modalSteps.textContent.trim()) parts.push('Приготовление: ' + modalSteps.textContent);
+const text = parts.join('. ').replace(/\s+/g, ' ').trim();
+if (!text) return;
+
+const u = new SpeechSynthesisUtterance(text);
+u.lang = 'ru-RU';
+u.rate = 0.95;
+u.onend = () => stopSpeech();
+u.onerror = () => stopSpeech();
+speechSynthesis.speak(u);
+ttsBtn.textContent = '⏹ Остановить чтение';
+ttsBtn.classList.add('tts-active');
+});
+
+// --- РЕЖИМ ГОТОВКИ ---
+let cookState = null;
+let wakeLock = null;
+
+async function lockScreen() {
+try {
+if ('wakeLock' in navigator) {
+wakeLock = await navigator.wakeLock.request('screen');
+}
+} catch (e) { /* не критично */ }
+}
+async function unlockScreen() {
+try { if (wakeLock) { await wakeLock.release(); wakeLock = null; } } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+if (document.visibilityState === 'visible' && cookState) lockScreen();
+});
+
+cookModeBtn.addEventListener('click', openCookMode);
+
+function openCookMode() {
+if (!currentRecipeData) return;
+const lines = (currentRecipeData.steps || '')
+.split('\n').map(s => s.trim()).filter(Boolean)
+.map(s => s.replace(/^\d+[.)]\s*/, ''));
+if (lines.length === 0) { alert('В этом рецепте нет шагов'); return; }
+
+cookState = { steps: lines, idx: 0 };
+stopSpeech();
+stopGlobalTimer();
+modal.style.display = 'none';
+cookMode.style.display = 'flex';
+cookDishName.textContent = currentRecipeData.title || '';
+renderCookStep();
+lockScreen();
+}
+
+function renderCookStep() {
+const total = cookState.steps.length;
+const i = cookState.idx;
+cookStepNum.textContent = `Шаг ${i + 1} из ${total}`;
+cookDots.innerHTML = Array.from({ length: total }, (_, k) =>
+`<span class="${k <= i ? 'on' : ''}">●</span>`
+).join('');
+cookStepText.textContent = cookState.steps[i];
+cookStepText.scrollTop = 0;
+
+const t = parseTime(cookState.steps[i]);
+cookTimerArea.innerHTML = t
+? `<button class="cook-timer-btn" data-sec="${t}">⏱ Засечь ${fmtTime(t)}</button>`
+: '';
+
+const isLast = i === total - 1;
+cookNextBtn.textContent = isLast ? '✅ Приготовил!' : 'Далее →';
+cookNextBtn.classList.toggle('cook-finish', isLast);
+cookPrevBtn.disabled = i === 0;
+}
+
+cookTimerArea.addEventListener('click', (e) => {
+const btn = e.target.closest('.cook-timer-btn');
+if (btn) startGlobalTimer(parseInt(btn.getAttribute('data-sec'), 10));
+});
+
+cookPrevBtn.addEventListener('click', () => {
+if (!cookState || cookState.idx === 0) return;
+cookState.idx--;
+renderCookStep();
+});
+
+cookNextBtn.addEventListener('click', () => {
+if (!cookState) return;
+if (cookState.idx < cookState.steps.length - 1) {
+cookState.idx++;
+renderCookStep();
+} else {
+finishCooking();
+}
+});
+
+cookExitBtn.addEventListener('click', () => {
+stopGlobalTimer();
+unlockScreen();
+cookMode.style.display = 'none';
+cookState = null;
+if (currentRecipeId) openRecipe(currentRecipeId);
+});
+
+async function finishCooking() {
+if (!currentRecipeId) return;
+const id = currentRecipeId;
+const col = currentCollection;
+stopGlobalTimer();
+unlockScreen();
+cookMode.style.display = 'none';
+cookState = null;
+currentRecipeId = null;
+modal.style.display = 'none';
+
+try {
+if (col === 'recipes') {
+await toggleCooked(id);
+} else {
+await moveWishlistToRecipes(id);
+}
+launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
+} catch (e) {
+console.error(e);
+alert('Не удалось сохранить отметку');
+}
+}
+
+// --- Случайный рецепт ---
+randomBtn.addEventListener('click', () => {
+const pool = currentView === 'recipes' ? allRecipes : allWishlist;
+if (pool.length === 0) {
+alert('Пока нечего выбирать — добавьте рецепты 🙂');
+return;
+}
+openRecipe(pool[Math.floor(Math.random() * pool.length)].id);
+});
+
+// --- Фон ---
+function applyBackground() {
+const bgMap = {
+'десерт': 'bg-dessert', 'суп': 'bg-soup', 'салат': 'bg-salad',
+'холодная закуска': 'bg-cold-snack', 'горячая закуска': 'bg-hot-snack',
+'выпечка сладкая': 'bg-sweet-pastry', 'выпечка не сладкая': 'bg-savory-pastry',
+'вторые блюда': 'bg-main', 'гарниры': 'bg-side'
+};
+let bgClass = 'bg-all';
+if (currentView === 'wishlist') {
+bgClass = 'bg-wishlist';
+} else if (categoryFilter.value !== 'all') {
+bgClass = bgMap[categoryFilter.value] || 'bg-all';
+}
+document.body.className = bgClass;
+if (localStorage.getItem('largeFont') === '1') document.body.classList.add('large-font');
+}
+
+function getRating(r) {
+const reviews = r.reviews || [];
+if (reviews.length === 0) return { avg: null, count: 0 };
+const sum = reviews.reduce((acc, rev) => acc + (rev.stars || 0), 0);
+return { avg: Math.round((sum / reviews.length) * 10) / 10, count: reviews.length };
+}
+
+function starsText(n) {
+if (!n) return '';
+const full = Math.round(n);
+return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+function compressImage(file, maxWidth = 700, quality = 0.55) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = (e) => {
+const img = new Image();
+img.onload = () => {
+let w = img.width;
+let h = img.height;
+if (w > maxWidth) {
+h = Math.round((h * maxWidth) / w);
+w = maxWidth;
+}
+const canvas = document.createElement('canvas');
+canvas.width = w;
+canvas.height = h;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, w, h);
+resolve(canvas.toDataURL('image/jpeg', quality));
+};
+img.onerror = reject;
+img.src = e.target.result;
+};
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
+
+async function compressImages(files) {
+const limit = Math.min(files.length, 4);
+if (files.length > 4) {
+alert('Максимум 4 фото — взяты первые 4.');
+}
+const result = [];
+for (let i = 0; i < limit; i++) {
+result.push(await compressImage(files[i]));
+}
+return result;
+}
+
+// --- Авторизация ---
+loginBtn.addEventListener('click', async () => {
+const email = loginEmail.value.trim();
+const password = loginPassword.value.trim();
+if (!email || !password) {
+loginError.style.display = 'block';
+loginError.textContent = 'Введите email и пароль';
+return;
+}
+try {
+await signInWithEmailAndPassword(auth, email, password);
+} catch (e) {
+loginError.style.display = 'block';
+loginError.textContent = 'Неверный email или пароль';
+}
+});
+
+logoutBtn.addEventListener('click', async () => {
+stopSpeech();
+stopDictation();
+stopGlobalTimer();
+unlockScreen();
+await signOut(auth);
+});
+
+onAuthStateChanged(auth, (user) => {
+if (user) {
+loginScreen.style.display = 'none';
+appDiv.style.display = 'block';
+applyLargeFont();
+applyBackground();
+startRealtime();
+} else {
+loginScreen.style.display = 'flex';
+appDiv.style.display = 'none';
+stopSpeech();
+stopDictation();
+stopGlobalTimer();
+unlockScreen();
+loginEmail.value = '';
+loginPassword.value = '';
+}
+});
+
+// --- Реалтайм ---
+let unsubRecipes = null;
+let unsubWishlist = null;
+
+function startRealtime() {
+if (unsubRecipes) unsubRecipes();
+if (unsubWishlist) unsubWishlist();
+
+unsubRecipes = onSnapshot(query(recipesCol, orderBy('createdAt', 'desc')), (snap) => {
+allRecipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+if (currentView === 'recipes') renderList();
+}, (err) => {
+console.error('Ошибка реалтайма (recipes):', err);
+recipesList.innerHTML = '<p style="color:red;">Ошибка загрузки. Проверьте права Firestore.</p>';
+});
+
+unsubWishlist = onSnapshot(query(wishlistCol, orderBy('createdAt', 'desc')), (snap) => {
+allWishlist = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+if (currentView === 'wishlist') renderList();
+}, (err) => {
+console.error('Ошибка реалтайма (wishlist):', err);
+});
+}
+
+// --- Вкладки ---
+tabs.forEach(tab => {
+tab.addEventListener('click', () => {
+tabs.forEach(t => t.classList.remove('active'));
+tab.classList.add('active');
+currentView = tab.getAttribute('data-view');
+cancelEdit();
+applyBackground();
+favToggle.style.display = currentView === 'wishlist' ? 'none' : 'flex';
+renderList();
+});
+});
+
+// --- Поиск ---
+function matchesSearch(r, term) {
+if (!term) return true;
+const haystack = [
+r.title || '',
+r.steps || '',
+r.ingredientsShort || ''
+].join(' ').toLowerCase();
+return haystack.includes(term);
+}
+
+function emptyStateHtml(icon, text) {
+return `<div class="empty-state"><div class="es-icon">${icon}</div><p>${text}</p></div>`;
+}
+
+function renderList() {
+const data = currentView === 'recipes' ? allRecipes : allWishlist;
+const selected = categoryFilter.value;
+const term = searchInput.value.trim().toLowerCase();
+
+let filtered = data;
+if (currentView === 'recipes' && selected !== 'all') {
+filtered = filtered.filter(r => r.category === selected);
+}
+if (currentView === 'recipes' && favOnly.checked) {
+filtered = filtered.filter(r => r.favorite === true);
+}
+filtered = filtered.filter(r => matchesSearch(r, term));
+
+recipesList.innerHTML = '';
+if (filtered.length === 0) {
+if (term) {
+recipesList.innerHTML = emptyStateHtml('🔍', 'Ничего не нашлось — даже поварёнок не помог.<br>Попробуйте другое слово 🙂');
+} else if (currentView === 'wishlist') {
+recipesList.innerHTML = emptyStateHtml('📋', 'Пока ничего не запланировано.<br>Нажмите ☆ на приглянувшемся рецепте — или добавьте новый!');
+} else if (favOnly.checked) {
+recipesList.innerHTML = emptyStateHtml('⭐', 'В избранном пусто — нажимайте ☆ на карточках,<br>чтобы собрать свою золотую коллекцию.');
+} else if (selected !== 'all') {
+recipesList.innerHTML = emptyStateHtml('🍽️', 'В этой категории пока пусто.<br>Добавьте рецепт — и она оживёт!');
+} else {
+recipesList.innerHTML = emptyStateHtml('🍳', 'Здесь пока пусто — как сковородка перед завтраком.<br>Добавьте первый рецепт!');
+}
+return;
+}
+
+filtered.forEach((r, idx) => {
+const card = document.createElement('div');
+card.className = 'card recipe-card' + (r.cooked ? ' cooked' : '');
+card.style.animationDelay = Math.min(idx * 60, 480) + 'ms';
+
+const catClass = getCategoryClass(r.category);
+const catEmoji = getCategoryEmoji(r.category);
+const { avg, count } = getRating(r);
+const ratingHtml = avg
+? `<div class="rating-line">${starsText(avg)} <span class="rating-count">${avg} · оценок: ${count}</span></div>`
+: '';
+const badges = [];
+if (r.favorite) badges.push('<span class="fav-badge">⭐ В избранном</span>');
+if (r.cooked) badges.push('<span class="cooked-badge">Уже пробовали ✅</span>');
+const isRecipes = currentView === 'recipes';
+const images = getImages(r);
+
+const mainImg = images[0]
+? `<div class="polaroid"><img src="${images[0]}" alt="Фото блюда">${addedDateStr(r) ? `<div class="polaroid-caption">${escapeHtml(addedDateStr(r))}</div>` : ''}</div>`
+: '';
+const stripHtml = images.length > 1
+? `<div class="photo-strip">${images.slice(1).map(src => `<img src="${src}" alt="Фото блюда">`).join('')}</div>`
+: '';
+
+card.innerHTML = `
+<span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
+<h3>${escapeHtml(r.title)} ${badges.join(' ')}</h3>
+${ratingHtml}
+${mainImg}
+${stripHtml}
+${ingredientsToHtml(r.ingredientsShort)}
+<div class="meta">${r.link ? `<a href="${escapeHtml(r.link)}" target="_blank">Источник</a>` : ''}</div>
+<p>${escapeHtml(r.steps).replace(/\n/g, '<br>')}</p>
+<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+${isRecipes ? `<button class="icon-btn favCardBtn" data-id="${r.id}" title="Избранное">${r.favorite ? '⭐' : '☆'}</button>` : ''}
+${isRecipes ? `<button class="icon-btn cookedCardBtn" data-id="${r.id}" title="Уже приготовили">${r.cooked ? '✓' : '☐'}</button>` : ''}
+<button class="edit-btn editRecipeBtn" data-id="${r.id}">Редактировать</button>
+<button class="delete-btn deleteRecipeBtn" data-id="${r.id}">Удалить</button>
+</div>
+`;
+
+card.addEventListener('click', (e) => {
+if (e.target.closest('button') || e.target.closest('a')) return;
+openRecipe(r.id);
+});
+
+recipesList.appendChild(card);
+});
+
+document.querySelectorAll('.editRecipeBtn').forEach(btn => {
+btn.addEventListener('click', (e) => {
+e.stopPropagation();
+startEdit(btn.getAttribute('data-id'));
+});
+});
+document.querySelectorAll('.deleteRecipeBtn').forEach(btn => {
+btn.addEventListener('click', async (e) => {
+e.stopPropagation();
+if (confirm('Удалить рецепт?')) {
+await deleteRecipe(btn.getAttribute('data-id'));
+}
+});
+});
+document.querySelectorAll('.favCardBtn').forEach(btn => {
+btn.addEventListener('click', (e) => {
+e.stopPropagation();
+toggleFavorite(btn.getAttribute('data-id'));
+});
+});
+document.querySelectorAll('.cookedCardBtn').forEach(btn => {
+btn.addEventListener('click', (e) => {
+e.stopPropagation();
+const id = btn.getAttribute('data-id');
+const r = allRecipes.find(x => x.id === id);
+const turningOn = r && !r.cooked;
+toggleCooked(id);
+if (turningOn) {
+const rect = btn.getBoundingClientRect();
+launchConfetti(rect.left + rect.width / 2, rect.top);
+}
+});
+});
+}
+
+categoryFilter.addEventListener('change', () => {
+applyBackground();
+renderList();
+});
+searchInput.addEventListener('input', renderList);
+favOnly.addEventListener('change', () => {
+favToggle.classList.toggle('active', favOnly.checked);
+renderList();
+});
+
+// --- Избранное и «Приготовил» ---
+async function toggleFavorite(id) {
+const r = allRecipes.find(x => x.id === id);
+if (!r) return;
+try {
+await setDoc(doc(db, 'recipes', id), { favorite: !r.favorite }, { merge: true });
+} catch (e) {
+console.error(e);
+alert('Не удалось обновить избранное');
+}
+}
+
+async function toggleCooked(id) {
+const r = allRecipes.find(x => x.id === id);
+if (!r) return;
+try {
+await setDoc(doc(db, 'recipes', id), {
+cooked: !r.cooked,
+cookedAt: !r.cooked ? new Date() : null
+}, { merge: true });
+} catch (e) {
+console.error(e);
+alert('Не удалось обновить отметку');
+}
+}
+
+// --- Редактирование ---
+function startEdit(id) {
+const data = currentView === 'recipes' ? allRecipes : allWishlist;
+const r = data.find(x => x.id === id);
+if (!r) { alert('Рецепт не найден'); return; }
+
+editingId = id;
+editingCollection = currentView === 'recipes' ? 'recipes' : 'wishlist';
+editingImages = getImages(r);
+
+stopSpeech();
+stopDictation();
+stopGlobalTimer();
+cookMode.style.display = 'none';
+cookState = null;
+modal.style.display = 'none';
+
+titleInput.value = r.title || '';
+categoryInput.value = r.category || '';
+ingredientsInput.value = r.ingredientsShort || '';
+stepsInput.value = r.steps || '';
+linkInput.value = r.link || '';
+imageInput.value = '';
+updateIngHint();
+
+formTitle.textContent = 'Редактировать рецепт';
+editNotice.style.display = 'block';
+addRecipeBtn.textContent = 'Сохранить изменения';
+cancelEditBtn.style.display = 'block';
+
+document.getElementById('addFormCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEdit() {
+editingId = null;
+editingCollection = null;
+editingImages = [];
+
+stopDictation();
+
+titleInput.value = '';
+categoryInput.selectedIndex = 0;
+ingredientsInput.value = '';
+stepsInput.value = '';
+linkInput.value = '';
+imageInput.value = '';
+updateIngHint();
+
+formTitle.textContent = currentView === 'wishlist' ? 'Добавить в «Хочу приготовить»' : 'Добавить рецепт';
+editNotice.style.display = 'none';
+addRecipeBtn.textContent = currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт';
+cancelEditBtn.style.display = 'none';
+}
+
+cancelEditBtn.addEventListener('click', cancelEdit);
+
+// --- Добавление / сохранение ---
+async function addRecipe() {
+stopDictation();
+
+const title = titleInput.value.trim();
+const category = categoryInput.value;
+const ingredientsShort = formatIngredients(ingredientsInput.value);
+const steps = formatSteps(stepsInput.value);
+const link = linkInput.value.trim();
+
+if (!title || !category || !steps) {
+alert('Заполните название, категорию и шаги');
+return;
+}
+
+let newImages = null;
+if (imageInput.files.length > 0) {
+addRecipeBtn.textContent = 'Обрабатываем фото…';
+try {
+newImages = await compressImages(imageInput.files);
+} catch (e) {
+console.error('Ошибка сжатия:', e);
+alert('Не удалось обработать фото. Попробуйте другие.');
+addRecipeBtn.textContent = editingId ? 'Сохранить изменения'
+: (currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт');
+return;
+}
+}
+
+addRecipeBtn.textContent = 'Сохраняем…';
+
+if (editingId) {
+const docRef = doc(db, editingCollection, editingId);
+const updates = { title, category, ingredientsShort, steps, link };
+if (newImages !== null && newImages.length > 0) {
+updates.imagesBase64 = newImages;
+updates.imageBase64 = newImages[0] || '';
+} else if (editingImages.length > 0) {
+updates.imagesBase64 = editingImages;
+updates.imageBase64 = editingImages[0] || '';
+}
+await setDoc(docRef, updates, { merge: true });
+cancelEdit();
+} else {
+const targetCol = currentView === 'wishlist' ? wishlistCol : recipesCol;
+await addDoc(targetCol, {
+title, category, ingredientsShort, steps, link,
+imageBase64: (newImages && newImages[0]) || '',
+imagesBase64: newImages || [],
+favorite: false, cooked: false,
+createdAt: new Date(), reviews: []
+});
+cancelEdit();
+}
+
+addRecipeBtn.textContent = currentView === 'wishlist' ? 'Добавить в список желаний' : 'Добавить рецепт';
+}
+
+// --- Удаление ---
+async function deleteRecipe(id) {
+const col = currentView === 'wishlist' ? wishlistCol : recipesCol;
+try {
+if (editingId === id) cancelEdit();
+await deleteDoc(doc(db, col.path, id));
+if (currentRecipeId === id) closeModal();
+} catch (e) {
+console.error(e);
+alert('Не удалось удалить рецепт');
+}
+}
+
+// --- Открытие рецепта ---
+async function openRecipe(id) {
+currentRecipeId = id;
+currentCollection = currentView === 'wishlist' ? 'wishlist' : 'recipes';
+
+try {
+const docRef = doc(db, currentCollection, id);
+const recipeDoc = await getDoc(docRef);
+if (!recipeDoc.exists()) { alert('Рецепт не найден'); return; }
+const r = recipeDoc.data();
+currentRecipeData = r;
+const images = getImages(r);
+
+modalTitle.textContent = r.title || '';
+modalImage.src = images[0] || '';
+modalImage.style.display = images.length ? 'block' : 'none';
+
+modalGallery.innerHTML = '';
+if (images.length > 1) {
+images.forEach((src, i) => {
+const thumb = document.createElement('img');
+thumb.src = src;
+if (i === 0) thumb.classList.add('selected');
+thumb.addEventListener('click', () => {
+modalImage.src = src;
+modalGallery.querySelectorAll('img').forEach(t => t.classList.remove('selected'));
+thumb.classList.add('selected');
+});
+modalGallery.appendChild(thumb);
+});
+}
+
+// Сброс пересчёта порций при каждом открытии
+modalIngredients.innerHTML = ingredientsToHtml(r.ingredientsShort) || '';
+portTo.value = '';
+modalSteps.innerHTML = renderStepsHtml(r.steps);
+modalMeta.textContent = r.link ? `Источник: ${escapeHtml(r.link)}` : '';
+
+doneBtn.style.display = currentCollection === 'wishlist' ? 'block' : 'none';
+favModalBtn.style.display = currentCollection === 'recipes' ? 'block' : 'none';
+cookedModalBtn.style.display = currentCollection === 'recipes' ? 'block' : 'none';
+favModalBtn.textContent = r.favorite ? '⭐' : '☆';
+favModalBtn.classList.toggle('fav-active', !!r.favorite);
+cookedModalBtn.textContent = r.cooked ? '✓' : '☐';
+cookedModalBtn.classList.toggle('cooked-active', !!r.cooked);
+
+selectedStars = 0;
+updateStarsUI();
+renderReviews(r.reviews || []);
+stopSpeech();
+stopGlobalTimer();
+modal.style.display = 'block';
+modal.scrollTo({ top: 0, behavior: 'smooth' });
+} catch (e) {
+console.error(e);
+alert('Ошибка при открытии рецепта');
+}
+}
+
+function closeModal() {
+stopSpeech();
+stopGlobalTimer();
+modal.style.display = 'none';
+currentRecipeId = null;
+currentRecipeData = null;
+}
+closeModalBtn.addEventListener('click', closeModal);
+
+editFromModalBtn.addEventListener('click', () => {
+if (!currentRecipeId) return;
+startEdit(currentRecipeId);
+});
+
+favModalBtn.addEventListener('click', async () => {
+if (!currentRecipeId || currentCollection !== 'recipes') return;
+const r = allRecipes.find(x => x.id === currentRecipeId);
+if (!r) return;
+await toggleFavorite(currentRecipeId);
+favModalBtn.textContent = !r.favorite ? '⭐' : '☆';
+favModalBtn.classList.toggle('fav-active', !r.favorite);
+});
+
+cookedModalBtn.addEventListener('click', async () => {
+if (!currentRecipeId || currentCollection !== 'recipes') return;
+const r = allRecipes.find(x => x.id === currentRecipeId);
+if (!r) return;
+const turningOn = !r.cooked;
+await toggleCooked(currentRecipeId);
+cookedModalBtn.textContent = !r.cooked ? '✓' : '☐';
+cookedModalBtn.classList.toggle('cooked-active', !r.cooked);
+if (turningOn) {
+const rect = cookedModalBtn.getBoundingClientRect();
+launchConfetti(rect.left + rect.width / 2, rect.top);
+}
+});
+
+// --- Рейтинг ---
+function updateStarsUI() {
+starsInput.querySelectorAll('button').forEach(btn => {
+const n = parseInt(btn.getAttribute('data-star'), 10);
+btn.classList.toggle('active', n <= selectedStars);
+});
+}
+
+starsInput.querySelectorAll('button').forEach(btn => {
+btn.addEventListener('click', () => {
+selectedStars = parseInt(btn.getAttribute('data-star'), 10);
+updateStarsUI();
+starsInput.querySelectorAll('button').forEach((b, i) => {
+const n = parseInt(b.getAttribute('data-star'), 10);
+if (n <= selectedStars) {
+setTimeout(() => {
+b.classList.remove('pop');
+void b.offsetWidth;
+b.classList.add('pop');
+setTimeout(() => b.classList.remove('pop'), 450);
+}, i * 90);
+}
+});
+});
+});
+
+async function addReview() {
+const name = reviewName.value.trim();
+const text = reviewText.value.trim();
+if (!selectedStars) { alert('Выберите звёзды от 1 до 5'); return; }
+if (!name) { alert('Укажите имя'); return; }
+if (!currentRecipeId) return;
+
+const docRef = doc(db, currentCollection, currentRecipeId);
+const recipeDoc = await getDoc(docRef);
+if (!recipeDoc.exists()) { alert('Рецепт не найден'); closeModal(); return; }
+
+const reviews = recipeDoc.data().reviews || [];
+reviews.push({ name, stars: selectedStars, text, date: new Date() });
+await setDoc(docRef, { reviews }, { merge: true });
+
+reviewName.value = '';
+reviewText.value = '';
+selectedStars = 0;
+updateStarsUI();
+openRecipe(currentRecipeId);
+}
+
+function renderReviews(reviews) {
+const { avg, count } = getRating({ reviews });
+let header = avg
+? `<div class="rating-line">${starsText(avg)} <span class="rating-count">${avg} из 5 · оценок: ${count}</span></div>`
+: '<p>Ещё нет оценок — поставьте первую!</p>';
+const items = reviews.slice().reverse().map(rev => {
+let dateStr = '';
+try { dateStr = new Date(rev.date.seconds ? rev.date.seconds * 1000 : rev.date).toLocaleDateString(); } catch(e) {}
+return `<div class="review-item">
+<span class="review-stars">${starsText(rev.stars)}</span>
+<b>${escapeHtml(rev.name)}</b> <small>${dateStr}</small><br>
+${rev.text ? escapeHtml(rev.text) : '<small>без отзыва</small>'}
+</div>`;
+}).join('');
+reviewsList.innerHTML = header + items;
+}
+
+// --- Перенос wishlist -> recipes (общая функция) ---
+async function moveWishlistToRecipes(id) {
+const docRef = doc(db, 'wishlist', id);
+const recipeDoc = await getDoc(docRef);
+if (!recipeDoc.exists()) { alert('Рецепт не найден'); return false; }
+const r = recipeDoc.data();
+const images = getImages(r);
+
+await addDoc(recipesCol, {
+title: r.title, category: r.category, ingredientsShort: r.ingredientsShort || '',
+steps: r.steps, link: r.link,
+imageBase64: images[0] || '',
+imagesBase64: images,
+favorite: r.favorite || false, cooked: true, cookedAt: new Date(),
+createdAt: new Date(), reviews: r.reviews || []
+});
+
+await deleteDoc(docRef);
+return true;
+}
+
+doneBtn.addEventListener('click', async () => {
+if (!currentRecipeId || currentCollection !== 'wishlist') return;
+try {
+const ok = await moveWishlistToRecipes(currentRecipeId);
+if (ok) {
+const rect = doneBtn.getBoundingClientRect();
+launchConfetti(rect.left + rect.width / 2, rect.top);
+closeModal();
+}
+} catch (e) {
+console.error(e);
+alert('Не удалось переместить рецепт');
+}
+});
+
+// --- Обработчики ---
+addRecipeBtn.addEventListener('click', addRecipe);
+addReviewBtn.addEventListener('click', addReview);
 </script>
+<script>
+if ('serviceWorker' in navigator) {
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('./sw.js')
+.catch((err) => console.warn('SW не зарегистрировался:', err));
+});
+}
+</script>
+<!-- Кнопка установки PWA -->
+<div id="install-banner" class="install-banner hidden">
+  <div class="install-content">
+    <span class="install-icon">🍳</span>
+    <div class="install-text">
+      <strong>Хотите приложение?</strong><br>
+      Добавьте сайт на главный экран — будет как отдельное приложение.
+    </div>
+    <button id="install-btn" class="install-button">Установить</button>
+  </div>
+</div>
+<script>
+  let deferredPrompt = null;
+  const installBanner = document.getElementById('install-banner');
+  const installBtn = document.getElementById('install-btn');
+
+  // Проверяем, запущено ли уже как приложение (standalone)
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBanner.classList.add('hidden');
+  }
+
+  // Слушаем событие beforeinstallprompt — оно приходит только на Android/Chrome
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBanner.classList.remove('hidden'); // Показываем кнопку
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      const { outcome } = await deferredPrompt.prompt();
+      if (outcome === 'accepted') {
+        console.log('Пользователь установил PWA');
+      } else {
+        console.log('Установка отклонена');
+      }
+      deferredPrompt = null;
+      installBanner.classList.add('hidden'); // Убираем кнопку после попытки
+    } else {
+      // Если deferredPrompt нет — скорее всего, это iPhone/Safari
+      alert('📱 На iPhone установка работает иначе:\n1. Откройте сайт в Safari.\n2. Нажмите «Поделиться» → «На экран „Домой“».\nТак сайт станет как приложение без адресной строки.');
+    }
+  });
+</script>
+
 </body>
 </html>
+
+
+
