@@ -428,6 +428,82 @@ font-size: 1.05em; font-weight: 700;
 .hidden {
   display: none !important;
 }
+/* ===== ПРАЗДНИЧНЫЕ ПОДБОРКИ ===== */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.collection-card {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(122,74,31,0.2);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.collection-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
+.collection-card h3 { margin: 0 0 4px; color: #7a4a1f; font-size: 1.15em; }
+.collection-card .cc-meta { font-size: 0.85em; color: #888; }
+.collection-card .cc-emoji { font-size: 1.8em; margin-right: 6px; }
+.collection-card .cc-del {
+  position: absolute; top: 8px; right: 8px;
+  width: 34px; height: 34px; min-height: 34px; padding: 0;
+  border-radius: 50%; background: #fff; color: #d9534f; border: 1px solid #ddd;
+  font-size: 16px; line-height: 1;
+}
+.collection-card .cc-del:hover { background: #d9534f; color: #fff; }
+
+.collection-drop-hint {
+  border: 2px dashed #d9c9a8; border-radius: 12px;
+  padding: 12px; text-align: center; color: #a07848; font-size: 0.9em;
+  margin-bottom: 14px; background: rgba(255,255,255,0.6);
+}
+.collection-drop-hint.drag-over { border-color: #4a90e2; background: #eaf3ff; color: #2c6cb0; }
+
+.collection-detail-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.collection-detail-head h2 { margin: 0; color: #7a4a1f; }
+
+.dragging { opacity: 0.45; }
+
+.cooked-collection-note {
+  display: inline-block; margin: 4px 4px 0 0; padding: 3px 8px;
+  background: #eafaf1; color: #1e7e45; border-radius: 6px;
+  font-size: 0.8em; font-weight: 600;
+}
+
+/* Модалка создания подборки */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000;
+  display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 14px; padding: 20px; width: 100%; max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.modal-box h3 { margin-top: 0; color: #7a4a1f; }
+.modal-box input { margin-bottom: 12px; }
+.modal-box .btn-row { display: flex; gap: 8px; }
+.modal-box .btn-row button { flex: 1; }
+/* Список подборок в модалке */
+.collection-pick-list { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; margin-bottom: 12px; }
+.collection-pick-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px;
+  background: #faf7f0; border: 1px solid #e8dfc9;
+  cursor: pointer; font-size: 1em; text-align: left;
+  width: 100%; margin: 0; color: #333; font-weight: 600;
+}
+.collection-pick-item:hover { background: #f2ead6; border-color: #d4bf94; }
+.collection-pick-item .cp-emoji { font-size: 1.4em; }
+.collection-pick-item .cp-count { margin-left: auto; font-size: 0.85em; color: #888; font-weight: 400; }
 </style>
 </head>
 <body class="bg-all">
@@ -473,8 +549,9 @@ font-size: 1.05em; font-weight: 700;
 </div>
 
 <div class="tabs">
-<button class="tab-btn active" data-view="recipes">Все рецепты</button>
-<button class="tab-btn" data-view="wishlist">Хочу приготовить</button>
+  <button class="tab-btn active" data-view="recipes">Все рецепты</button>
+  <button class="tab-btn" data-view="wishlist">Хочу приготовить</button>
+  <button class="tab-btn" data-view="collections">🎉 Подборки</button>
 </div>
 
 <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
@@ -530,7 +607,14 @@ font-size: 1.05em; font-weight: 700;
 <button id="addRecipeBtn">Добавить рецепт</button>
 <button id="cancelEditBtn" style="background:#6c757d; display:none;">Отменить редактирование</button>
 </div>
-
+<div id="collectionsView" style="display:none;">
+  <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+    <button id="createCollectionBtn" style="flex:1; min-width:180px; background:#8e44ad;">
+      ➕ Создать подборку
+    </button>
+  </div>
+  <div id="collectionsList"></div>
+</div>
 <div id="recipesList"></div>
 
 <!-- Модалка рецепта -->
@@ -581,7 +665,27 @@ font-size: 1.05em; font-weight: 700;
 </div>
 </div>
 </div>
-
+<div id="collectionModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Новая подборка</h3>
+    <input id="collectionName" placeholder="Например: День рождения папы" maxlength="60">
+    <input id="collectionEmoji" placeholder="Эмодзи (необязательно), напр. 🎂" maxlength="4">
+    <div class="btn-row">
+      <button id="collectionCancelBtn" class="ghost-btn" style="color:#333;">Отмена</button>
+      <button id="collectionSaveBtn">Создать</button>
+    </div>
+  </div>
+</div>
+<!-- Модалка выбора подборки для добавления рецепта -->
+<div id="pickCollectionModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>В какую подборку?</h3>
+    <div id="pickCollectionList" class="collection-pick-list"></div>
+    <div class="btn-row">
+      <button id="pickCollectionCancelBtn" class="ghost-btn" style="color:#333;">Отмена</button>
+    </div>
+  </div>
+</div>
 <!-- РЕЖИМ ГОТОВКИ -->
 <div id="cookMode" class="cook-mode">
 <div class="cook-top">
@@ -665,6 +769,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const recipesCol = collection(db, 'recipes');
 const wishlistCol = collection(db, 'wishlist');
+const collectionsCol = collection(db, 'collections');
 
 // --- DOM ---
 const loginScreen = document.getElementById('loginScreen');
@@ -695,7 +800,17 @@ const favOnly = document.getElementById('favOnly');
 const favToggle = document.getElementById('favToggle');
 const recipesList = document.getElementById('recipesList');
 const formTitle = document.getElementById('formTitle');
-
+const collectionsView = document.getElementById('collectionsView');
+const collectionsList = document.getElementById('collectionsList');
+const createCollectionBtn = document.getElementById('createCollectionBtn');
+const collectionModal = document.getElementById('collectionModal');
+const collectionName = document.getElementById('collectionName');
+const collectionEmoji = document.getElementById('collectionEmoji');
+const collectionSaveBtn = document.getElementById('collectionSaveBtn');
+const collectionCancelBtn = document.getElementById('collectionCancelBtn');
+const pickCollectionModal = document.getElementById('pickCollectionModal');
+const pickCollectionList = document.getElementById('pickCollectionList');
+const pickCollectionCancelBtn = document.getElementById('pickCollectionCancelBtn');
 const modal = document.getElementById('recipeModal');
 const modalTitle = document.getElementById('modalTitle');
 const modalImage = document.getElementById('modalImage');
@@ -745,6 +860,9 @@ let currentCollection = 'recipes';
 let currentRecipeData = null;
 let allRecipes = [];
 let allWishlist = [];
+let allCollections = [];
+let currentCollectionId = null; // id открытой подборки
+let draggedRecipe = null;       // { id, source: 'recipes'|'wishlist' }
 let selectedStars = 0;
 
 let editingId = null;
@@ -1212,6 +1330,353 @@ console.error(e);
 alert('Не удалось сохранить отметку');
 }
 }
+// ===== ПОДБОРКИ =====
+
+createCollectionBtn.addEventListener('click', () => {
+  collectionName.value = '';
+  collectionEmoji.value = '';
+  collectionModal.classList.add('show');
+  setTimeout(() => collectionName.focus(), 50);
+});
+
+collectionCancelBtn.addEventListener('click', () => {
+  collectionModal.classList.remove('show');
+});
+
+collectionSaveBtn.addEventListener('click', async () => {
+  const name = collectionName.value.trim();
+  const emoji = collectionEmoji.value.trim() || '🎉';
+  if (!name) { alert('Введите название подборки'); return; }
+  try {
+    await addDoc(collectionsCol, {
+      name, emoji,
+      recipeIds: [],
+      createdAt: new Date(),
+      createdBy: auth.currentUser ? auth.currentUser.email : ''
+    });
+    collectionModal.classList.remove('show');
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось создать подборку');
+  }
+});
+
+collectionModal.addEventListener('click', (e) => {
+  if (e.target === collectionModal) collectionModal.classList.remove('show');
+});
+// ===== Модалка выбора подборки =====
+let pendingRecipeId = null;
+
+function openPickCollectionModal(recipeId) {
+  pendingRecipeId = recipeId;
+
+  if (allCollections.length === 0) {
+    pickCollectionList.innerHTML = `
+      <p style="text-align:center; color:#888; padding:12px 0;">
+        У вас пока нет ни одной подборки.<br>
+        Создайте первую — например, «День рождения папы» 🎂
+      </p>
+    `;
+    pickCollectionModal.classList.add('show');
+    return;
+  }
+
+  // Собираем id рецепта из recipes и wishlist — чтобы показать,
+  // в каких подборках он уже есть
+  pickCollectionList.innerHTML = '';
+  allCollections.forEach(c => {
+    const alreadyIn = (c.recipeIds || []).includes(recipeId);
+    const item = document.createElement('button');
+    item.className = 'collection-pick-item';
+    const count = (c.recipeIds || []).length;
+    item.innerHTML = `
+      <span class="cp-emoji">${escapeHtml(c.emoji || '🎉')}</span>
+      <span>${escapeHtml(c.name)}</span>
+      <span class="cp-count">${alreadyIn ? '✓ уже внутри' : count + ' рец.'}</span>
+    `;
+    if (alreadyIn) {
+      item.style.opacity = '0.55';
+      item.addEventListener('click', () => {
+        alert('Этот рецепт уже в этой подборке');
+      });
+    } else {
+      item.addEventListener('click', async () => {
+        await addRecipeToCollection(recipeId, c.id);
+        pickCollectionModal.classList.remove('show');
+        pendingRecipeId = null;
+      });
+    }
+    pickCollectionList.appendChild(item);
+  });
+
+  pickCollectionModal.classList.add('show');
+}
+
+pickCollectionCancelBtn.addEventListener('click', () => {
+  pickCollectionModal.classList.remove('show');
+  pendingRecipeId = null;
+});
+
+pickCollectionModal.addEventListener('click', (e) => {
+  if (e.target === pickCollectionModal) {
+    pickCollectionModal.classList.remove('show');
+    pendingRecipeId = null;
+  }
+});
+function renderCollections() {
+  if (currentCollectionId) {
+    renderCollectionDetail();
+    return;
+  }
+
+  if (allCollections.length === 0) {
+    collectionsList.innerHTML = emptyStateHtml('🎉',
+      'Пока нет ни одной подборки.<br>Создайте, например, «День рождения папы» и перетащите туда рецепты!');
+    return;
+  }
+
+  collectionsList.innerHTML = '<div class="collections-grid"></div>';
+  const grid = collectionsList.querySelector('.collections-grid');
+
+  allCollections.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'collection-card';
+    const count = (c.recipeIds || []).length;
+    card.innerHTML = `
+      <button class="cc-del" title="Удалить подборку">✕</button>
+      <h3><span class="cc-emoji">${escapeHtml(c.emoji || '🎉')}</span>${escapeHtml(c.name)}</h3>
+      <div class="cc-meta">${count} ${count === 1 ? 'рецепт' : count < 5 ? 'рецепта' : 'рецептов'}</div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.cc-del')) return;
+      currentCollectionId = c.id;
+      renderCollections();
+    });
+    card.querySelector('.cc-del').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Удалить подборку «${c.name}»? Рецепты останутся на месте.`)) return;
+      try {
+        await deleteDoc(doc(db, 'collections', c.id));
+      } catch (err) {
+        console.error(err);
+        alert('Не удалось удалить подборку');
+      }
+    });
+    grid.appendChild(card);
+  });
+}
+
+function renderCollectionDetail() {
+  const c = allCollections.find(x => x.id === currentCollectionId);
+  if (!c) { currentCollectionId = null; renderCollections(); return; }
+
+  const ids = c.recipeIds || [];
+
+  // Собираем рецепты из обеих коллекций
+  const items = [];
+  ids.forEach(id => {
+    const r1 = allRecipes.find(x => x.id === id);
+    if (r1) { items.push({ ...r1, _source: 'recipes' }); return; }
+    const r2 = allWishlist.find(x => x.id === id);
+    if (r2) items.push({ ...r2, _source: 'wishlist' });
+  });
+
+  collectionsList.innerHTML = `
+    <div class="collection-detail-head">
+      <h2><span style="font-size:1.2em;">${escapeHtml(c.emoji || '🎉')}</span> ${escapeHtml(c.name)}</h2>
+      <button id="backToCollectionsBtn" class="ghost-btn" style="width:auto; color:#333;">← Назад</button>
+    </div>
+    <div class="collection-drop-hint" id="collectionDropHint">
+      ⬇️ Перетащите сюда рецепт из «Все рецепты» или «Хочу приготовить»
+    </div>
+    <div id="collectionItems"></div>
+  `;
+
+  document.getElementById('backToCollectionsBtn').addEventListener('click', () => {
+    currentCollectionId = null;
+    renderCollections();
+  });
+
+  const dropHint = document.getElementById('collectionDropHint');
+  dropHint.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropHint.classList.add('drag-over');
+  });
+  dropHint.addEventListener('dragleave', () => dropHint.classList.remove('drag-over'));
+  dropHint.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropHint.classList.remove('drag-over');
+    const data = e.dataTransfer.getData('text/plain');
+    if (!data) return;
+    let parsed;
+    try { parsed = JSON.parse(data); } catch (err) { return; }
+    await addRecipeToCollection(parsed.id, c.id);
+  });
+
+  const itemsBox = document.getElementById('collectionItems');
+  if (items.length === 0) {
+    itemsBox.innerHTML = emptyStateHtml('🍽️', 'В подборке пока пусто.<br>Перетащите сюда рецепты из других вкладок.');
+    return;
+  }
+
+  items.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'card recipe-card' + (r.cooked ? ' cooked' : '');
+    const catClass = getCategoryClass(r.category);
+    const catEmoji = getCategoryEmoji(r.category);
+    const images = getImages(r);
+    const mainImg = images[0]
+      ? `<div class="polaroid"><img src="${images[0]}" alt="Фото блюда"></div>`
+      : '';
+
+    // Информация о том, где уже готовили
+    let cookedInfo = '';
+    if (Array.isArray(r.cookedInCollections) && r.cookedInCollections.length > 0) {
+      cookedInfo = r.cookedInCollections.map(cc =>
+        `<span class="cooked-collection-note">✅ ${escapeHtml(cc.emoji || '🎉')} ${escapeHtml(cc.name)} — ${escapeHtml(cc.date || '')}</span>`
+      ).join('');
+    }
+
+    card.innerHTML = `
+      <button class="icon-btn" style="float:right; color:#d9534f; width:44px; min-width:44px; height:44px;" title="Убрать из подборки">✕</button>
+      <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
+      <h3>${escapeHtml(r.title)}</h3>
+      ${mainImg}
+      ${ingredientsToHtml(r.ingredientsShort)}
+      ${cookedInfo ? `<div style="margin-top:6px;">${cookedInfo}</div>` : ''}
+      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+        <button class="done-btn cookedHereBtn" style="flex:1;">🍳 Приготовил</button>
+        <button class="ghost-btn openInCollectionBtn" style="width:auto; color:#333;">Открыть</button>
+      </div>
+    `;
+
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      // Открываем рецепт во «все рецепты», если он там есть
+      if (r._source === 'recipes') {
+        tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-view') === 'recipes'));
+        currentView = 'recipes';
+        recipesList.style.display = 'block';
+        collectionsView.style.display = 'none';
+        document.getElementById('searchInput').parentElement.style.display = 'flex';
+        openRecipe(r.id);
+      } else {
+        tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-view') === 'wishlist'));
+        currentView = 'wishlist';
+        recipesList.style.display = 'block';
+        collectionsView.style.display = 'none';
+        document.getElementById('searchInput').parentElement.style.display = 'flex';
+        openRecipe(r.id);
+      }
+    });
+
+    card.querySelector('.cookedHereBtn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await markCookedInCollection(r, c);
+    });
+
+    card.querySelector('.openInCollectionBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      card.click();
+    });
+
+    card.querySelector('.icon-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Убрать «${r.title}» из подборки?`)) return;
+      await removeRecipeFromCollection(r.id, c.id);
+    });
+
+    itemsBox.appendChild(card);
+  });
+}
+
+async function addRecipeToCollection(recipeId, collectionId) {
+  const c = allCollections.find(x => x.id === collectionId);
+  if (!c) return;
+  const ids = c.recipeIds || [];
+  if (ids.includes(recipeId)) {
+    alert('Этот рецепт уже в подборке');
+    return;
+  }
+  try {
+    await setDoc(doc(db, 'collections', collectionId), {
+      recipeIds: [...ids, recipeId]
+    }, { merge: true });
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось добавить рецепт в подборку');
+  }
+}
+
+async function removeRecipeFromCollection(recipeId, collectionId) {
+  const c = allCollections.find(x => x.id === collectionId);
+  if (!c) return;
+  const ids = (c.recipeIds || []).filter(id => id !== recipeId);
+  try {
+    await setDoc(doc(db, 'collections', collectionId), { recipeIds: ids }, { merge: true });
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось убрать рецепт');
+  }
+}
+
+async function markCookedInCollection(recipe, collection) {
+  const today = new Date().toLocaleDateString('ru-RU');
+  const entry = {
+    id: collection.id,
+    name: collection.name,
+    emoji: collection.emoji || '🎉',
+    date: today
+  };
+
+  // Случай 1: рецепт из «Хочу приготовить» — переносим в «Все рецепты»
+  if (recipe._source === 'wishlist') {
+    const newId = await moveWishlistToRecipes(recipe.id);
+    if (!newId) return;
+    try {
+      await setDoc(doc(db, 'recipes', newId), {
+        cookedInCollections: [entry]
+      }, { merge: true });
+
+      // Обновляем recipeIds в подборке: старый id → новый
+      const c = allCollections.find(x => x.id === collection.id);
+      if (c) {
+        const newIds = (c.recipeIds || []).map(x => x === recipe.id ? newId : x);
+        await setDoc(doc(db, 'collections', collection.id), { recipeIds: newIds }, { merge: true });
+      }
+
+      launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
+      alert(`«${recipe.title}» перенесён в «Все рецепты» и отмечен как приготовленный для «${collection.name}»`);
+    } catch (e) {
+      console.error(e);
+      alert('Не удалось сохранить отметку');
+    }
+    return;
+  }
+
+  // Случай 2: рецепт уже в «Все рецепты» — просто ставим отметку
+  if (recipe._source === 'recipes') {
+    const r = allRecipes.find(x => x.id === recipe.id);
+    if (!r) return;
+    const existing = Array.isArray(r.cookedInCollections) ? r.cookedInCollections : [];
+    const already = existing.some(x => x.id === collection.id && x.date === today);
+    const updated = already ? existing : [...existing, entry];
+
+    try {
+      await setDoc(doc(db, 'recipes', recipe.id), {
+        cooked: true,
+        cookedAt: new Date(),
+        cookedInCollections: updated
+      }, { merge: true });
+
+      launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
+      alert(`«${recipe.title}» отмечен как приготовленный для «${collection.name}» (${today})`);
+    } catch (e) {
+      console.error(e);
+      alert('Не удалось сохранить отметку');
+    }
+  }
+}
 
 // --- Случайный рецепт ---
 randomBtn.addEventListener('click', () => {
@@ -1340,10 +1805,12 @@ loginPassword.value = '';
 // --- Реалтайм ---
 let unsubRecipes = null;
 let unsubWishlist = null;
+let unsubCollections = null;
 
 function startRealtime() {
 if (unsubRecipes) unsubRecipes();
 if (unsubWishlist) unsubWishlist();
+if (unsubCollections) unsubCollections();   // ← ДОБАВЛЕНО
 
 unsubRecipes = onSnapshot(query(recipesCol, orderBy('createdAt', 'desc')), (snap) => {
 allRecipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1359,19 +1826,47 @@ if (currentView === 'wishlist') renderList();
 }, (err) => {
 console.error('Ошибка реалтайма (wishlist):', err);
 });
+
+// ↓↓↓ ДОБАВЛЕНО ↓↓↓
+unsubCollections = onSnapshot(query(collectionsCol, orderBy('createdAt', 'desc')), (snap) => {
+allCollections = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+if (currentView === 'collections') renderCollections();
+}, (err) => {
+console.error('Ошибка реалтайма (collections):', err);
+});
+// ↑↑↑ ДОБАВЛЕНО ↑↑↑
 }
 
 // --- Вкладки ---
 tabs.forEach(tab => {
-tab.addEventListener('click', () => {
-tabs.forEach(t => t.classList.remove('active'));
-tab.classList.add('active');
-currentView = tab.getAttribute('data-view');
-cancelEdit();
-applyBackground();
-favToggle.style.display = currentView === 'wishlist' ? 'none' : 'flex';
-renderList();
-});
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentView = tab.getAttribute('data-view');
+    cancelEdit();
+    applyBackground();
+    favToggle.style.display = currentView === 'wishlist' ? 'none' : 'flex';
+
+    // Переключение видимости блоков
+    if (currentView === 'collections') {
+      recipesList.style.display = 'none';
+      collectionsView.style.display = 'block';
+      document.querySelector('.kitchen-banner').style.display = 'none';
+      document.querySelector('.header-actions-row').style.display = 'none';
+      document.querySelector('#addFormCard').style.display = 'none';
+      document.querySelector('.tabs').style.display = 'flex'; // оставляем
+      document.getElementById('searchInput').parentElement.style.display = 'none';
+      renderCollections();
+    } else {
+      recipesList.style.display = 'block';
+      collectionsView.style.display = 'none';
+      document.querySelector('.kitchen-banner').style.display = 'block';
+      document.querySelector('.header-actions-row').style.display = 'flex';
+      document.querySelector('#addFormCard').style.display = 'block';
+      document.getElementById('searchInput').parentElement.style.display = 'flex';
+      renderList();
+    }
+  });
 });
 
 // --- Поиск ---
@@ -1422,6 +1917,14 @@ return;
 filtered.forEach((r, idx) => {
 const card = document.createElement('div');
 card.className = 'card recipe-card' + (r.cooked ? ' cooked' : '');
+card.setAttribute('draggable', 'true');
+card.addEventListener('dragstart', (e) => {
+  draggedRecipe = { id: r.id, source: currentView === 'recipes' ? 'recipes' : 'wishlist' };
+  e.dataTransfer.setData('text/plain', JSON.stringify(draggedRecipe));
+  e.dataTransfer.effectAllowed = 'copy';
+  card.classList.add('dragging');
+});
+card.addEventListener('dragend', () => card.classList.remove('dragging'));
 card.style.animationDelay = Math.min(idx * 60, 480) + 'ms';
 
 const catClass = getCategoryClass(r.category);
@@ -1433,6 +1936,11 @@ const ratingHtml = avg
 const badges = [];
 if (r.favorite) badges.push('<span class="fav-badge">⭐ В избранном</span>');
 if (r.cooked) badges.push('<span class="cooked-badge">Уже пробовали ✅</span>');
+if (Array.isArray(r.cookedInCollections) && r.cookedInCollections.length > 0) {
+  r.cookedInCollections.forEach(cc => {
+    badges.push(`<span class="cooked-collection-note">🎉 ${escapeHtml(cc.name)}${cc.date ? ' — ' + escapeHtml(cc.date) : ''}</span>`);
+  });
+}
 const isRecipes = currentView === 'recipes';
 const images = getImages(r);
 
@@ -1456,6 +1964,7 @@ ${ingredientsToHtml(r.ingredientsShort)}
 ${isRecipes ? `<button class="icon-btn favCardBtn" data-id="${r.id}" title="Избранное">${r.favorite ? '⭐' : '☆'}</button>` : ''}
 ${isRecipes ? `<button class="icon-btn cookedCardBtn" data-id="${r.id}" title="Уже приготовили">${r.cooked ? '✓' : '☐'}</button>` : ''}
 <button class="edit-btn editRecipeBtn" data-id="${r.id}">Редактировать</button>
+<button class="addToCollectionBtn" data-id="${r.id}" style="background:#8e44ad;">➕ В подборку</button>
 <button class="delete-btn deleteRecipeBtn" data-id="${r.id}">Удалить</button>
 </div>
 `;
@@ -1500,6 +2009,14 @@ const rect = btn.getBoundingClientRect();
 launchConfetti(rect.left + rect.width / 2, rect.top);
 }
 });
+});
+
+// Кнопка «➕ В подборку» на карточке рецепта
+document.querySelectorAll('.addToCollectionBtn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openPickCollectionModal(btn.getAttribute('data-id'));
+  });
 });
 }
 
@@ -1829,38 +2346,38 @@ reviewsList.innerHTML = header + items;
 
 // --- Перенос wishlist -> recipes (общая функция) ---
 async function moveWishlistToRecipes(id) {
-const docRef = doc(db, 'wishlist', id);
-const recipeDoc = await getDoc(docRef);
-if (!recipeDoc.exists()) { alert('Рецепт не найден'); return false; }
-const r = recipeDoc.data();
-const images = getImages(r);
+  const docRef = doc(db, 'wishlist', id);
+  const recipeDoc = await getDoc(docRef);
+  if (!recipeDoc.exists()) { alert('Рецепт не найден'); return null; }
+  const r = recipeDoc.data();
+  const images = getImages(r);
 
-await addDoc(recipesCol, {
-title: r.title, category: r.category, ingredientsShort: r.ingredientsShort || '',
-steps: r.steps, link: r.link,
-imageBase64: images[0] || '',
-imagesBase64: images,
-favorite: r.favorite || false, cooked: true, cookedAt: new Date(),
-createdAt: new Date(), reviews: r.reviews || []
-});
+  const newDoc = await addDoc(recipesCol, {
+    title: r.title, category: r.category, ingredientsShort: r.ingredientsShort || '',
+    steps: r.steps, link: r.link,
+    imageBase64: images[0] || '',
+    imagesBase64: images,
+    favorite: r.favorite || false, cooked: true, cookedAt: new Date(),
+    createdAt: new Date(), reviews: r.reviews || []
+  });
 
-await deleteDoc(docRef);
-return true;
+  await deleteDoc(docRef);
+  return newDoc.id;
 }
 
 doneBtn.addEventListener('click', async () => {
-if (!currentRecipeId || currentCollection !== 'wishlist') return;
-try {
-const ok = await moveWishlistToRecipes(currentRecipeId);
-if (ok) {
-const rect = doneBtn.getBoundingClientRect();
-launchConfetti(rect.left + rect.width / 2, rect.top);
-closeModal();
-}
-} catch (e) {
-console.error(e);
-alert('Не удалось переместить рецепт');
-}
+  if (!currentRecipeId || currentCollection !== 'wishlist') return;
+  try {
+    const newId = await moveWishlistToRecipes(currentRecipeId);
+    if (newId) {
+      const rect = doneBtn.getBoundingClientRect();
+      launchConfetti(rect.left + rect.width / 2, rect.top);
+      closeModal();
+    }
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось переместить рецепт');
+  }
 });
 
 // --- Обработчики ---
@@ -1922,6 +2439,8 @@ navigator.serviceWorker.register('./sw.js')
 
 </body>
 </html>
+
+
 
 
 
