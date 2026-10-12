@@ -64,20 +64,50 @@ position: relative; z-index: 1;
 }
 .pot-line { position: relative; font-size: 2.2em; line-height: 1; display: inline-block; }
 .steam {
-position: absolute; left: 50%; top: -8px;
-width: 13px; height: 13px; border-radius: 50%;
-background: rgba(255,255,255,0.9);
-filter: blur(5px);
-opacity: 0;
-animation: steamRise 3.4s ease-in infinite;
-pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,230,230,0.95) 20%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0) 100%);
+  filter: blur(3px);
+  opacity: 0;
+  animation: steamRise 4s ease-in infinite;
+  pointer-events: none;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(200,200,200,0.4);
 }
-.steam.s2 { margin-left: -20px; animation-delay: 1.1s; }
-.steam.s3 { margin-left: 18px; animation-delay: 2.2s; }
+.steam.s2 {
+  margin-left: -22px;
+  animation-delay: 1.4s;
+  animation-duration: 4.5s;
+}
+.steam.s3 {
+  margin-left: 20px;
+  animation-delay: 2.6s;
+  animation-duration: 5s;
+}
+
 @keyframes steamRise {
-0% { transform: translateY(0) scale(0.5); opacity: 0; }
-25% { opacity: 0.75; }
-100% { transform: translateY(-52px) scale(1.7); opacity: 0; }
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(calc(-50% - 8px), -35px) scale(1.3);
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(calc(-50% + 6px), -70px) scale(2);
+    opacity: 0;
+  }
 }
 .kitchen-banner h1 { margin: 0; color: #7a4a1f; font-size: 1.7em; font-weight: 700; }
 .banner-note {
@@ -104,11 +134,11 @@ transition: background 0.3s ease, border 0.3s ease, transform 0.25s ease, box-sh
 cursor: pointer;
 position: relative; z-index: 1;
 }
-.card.recipe-card { animation: fadeUp 0.45s ease both; }
+/*.card.recipe-card { animation: fadeUp 0.45s ease both; }
 @keyframes fadeUp {
 from { opacity: 0; transform: translateY(16px); }
 to { opacity: 1; transform: translateY(0); }
-}
+}*/
 @media (hover: hover) {
 .card.recipe-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
 }
@@ -747,6 +777,112 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
   0% { opacity: 1; transform: scale(0.5); }
   100% { opacity: 0; transform: scale(1.6); }
 }
+/* ===== ПАРАЛЛАКС БАННЕРА ===== */
+.kitchen-banner {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+.kitchen-banner.scrolled {
+  transform: translateY(-6px) scale(0.985);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+}
+.pot-line {
+  transition: transform 0.6s ease;
+}
+.kitchen-banner:hover .pot-line {
+  transform: rotate(-4deg) scale(1.05);
+}
+
+/* ===== STICKY-ЗАГОЛОВОК В МОДАЛКЕ РЕЦЕПТА ===== */
+#recipeModal .modal-sticky-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(255,255,255,0.99) 70%, rgba(255,255,255,0.92) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 14px 16px 12px;
+  margin: -16px -16px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease, padding 0.3s ease;
+}
+#recipeModal .modal-sticky-head.scrolled {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  padding: 10px 16px 10px;
+}
+#recipeModal .modal-sticky-head h2 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #7a4a1f;
+  padding-right: 80px; /* место под кнопку закрытия */
+}
+#recipeModal .modal-close-float {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 44px; height: 44px; min-height: 44px; padding: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  color: #333; border: 1px solid #ddd;
+  font-size: 20px; line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#recipeModal .modal-close-float:hover {
+  background: #f0f0f0;
+  transform: rotate(90deg);
+}
+
+/* ===== ПРОГРЕСС-БАР В РЕЖИМЕ ГОТОВКИ ===== */
+.cook-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(122,74,31,0.12);
+  border-radius: 6px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+  position: relative;
+}
+.cook-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e67e22, #f39c12, #2ecc71);
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-shadow: 0 0 10px rgba(243,156,18,0.4);
+}
+
+/* Заменяем точки на более компактный индикатор */
+.cook-dots {
+  display: none; /* старое скрыто, прогресс-бар вместо */
+}
+
+/* ===== КРАСИВОЕ ЗАВЕРШЕНИЕ ШАГА (в режиме готовки) ===== */
+.cook-step-finish {
+  animation: stepFinish 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes stepFinish {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.collection-card::before {
+  content: '';
+  position: absolute;
+  top: -4px; right: 20px;
+  width: 40px; height: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    #f39c12 0 4px, #fdf6e3 4px 8px
+  );
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  opacity: 0.6;
+}
+.collection-card:hover::before {
+  transform: rotate(3deg);
+  transition: transform 0.3s ease;
+}
 </style>
 </head>
 <body class="bg-all">
@@ -863,8 +999,11 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
 
 <!-- Модалка рецепта -->
 <div id="recipeModal" class="card" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.98); z-index:1000; overflow-y:auto; max-width:none; margin:0; border-radius:0; cursor:default;">
-<div style="padding:16px; max-width:700px; margin:0 auto;">
-<h2 id="modalTitle"></h2>
+<div style="padding:16px; max-width:700px; margin:0 auto; position:relative;">
+<div class="modal-sticky-head">
+  <h2 id="modalTitle"></h2>
+  <button id="closeModalFloat" class="modal-close-float" title="Закрыть">✕</button>
+</div>
 <img id="modalImage" style="max-height:320px; width:100%; object-fit:contain; background:#f7f4ee; border:1px solid rgba(122,74,31,0.15); border-radius:8px;">
 <div class="modal-gallery" id="modalGallery"></div>
 
@@ -936,7 +1075,11 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
 <div class="cook-dish" id="cookDishName"></div>
 <button id="cookExitBtn" class="cook-exit">✕ Выйти</button>
 </div>
-<div class="cook-dots" id="cookDots"></div>
+<!--<div class="cook-dots" id="cookDots"></div>-->
+<div class="cook-progress-bar">
+  <div class="cook-progress-fill" id="cookProgressFill"></div>
+</div>
+<div id="cookDots" style="display:none;"></div>
 <div class="cook-stepnum" id="cookStepNum"></div>
 <div class="cook-text" id="cookStepText"></div>
 <div class="cook-timer-area" id="cookTimerArea"></div>
@@ -1096,7 +1239,21 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 
 const micIngredients = document.getElementById('micIngredients');
 const micSteps = document.getElementById('micSteps');
-
+// ===== ПАРАЛЛАКС БАННЕРА =====
+const kitchenBanner = document.querySelector('.kitchen-banner');
+let bannerScrollRaf = null;
+window.addEventListener('scroll', () => {
+  if (bannerScrollRaf) return;
+  bannerScrollRaf = requestAnimationFrame(() => {
+    bannerScrollRaf = null;
+    if (!kitchenBanner) return;
+    if (window.scrollY > 40) {
+      kitchenBanner.classList.add('scrolled');
+    } else {
+      kitchenBanner.classList.remove('scrolled');
+    }
+  });
+}, { passive: true });
 const tabs = document.querySelectorAll('.tab-btn');
 let currentView = 'recipes';
 let currentRecipeId = null;
@@ -1622,12 +1779,29 @@ lockScreen();
 function renderCookStep() {
 const total = cookState.steps.length;
 const i = cookState.idx;
+
+// Обновляем прогресс-бар
+const progressFill = document.getElementById('cookProgressFill');
+if (progressFill) {
+  const percent = ((i + 1) / total) * 100;
+  progressFill.style.width = percent + '%';
+}
+
+// Старые точки (скрыты, но поддерживаем на всякий случай)
+if (cookDots) {
+  cookDots.innerHTML = Array.from({ length: total }, (_, k) =>
+    `<span class="${k <= i ? 'on' : ''}">●</span>`
+  ).join('');
+}
+
 cookStepNum.textContent = `Шаг ${i + 1} из ${total}`;
-cookDots.innerHTML = Array.from({ length: total }, (_, k) =>
-`<span class="${k <= i ? 'on' : ''}">●</span>`
-).join('');
 cookStepText.textContent = cookState.steps[i];
 cookStepText.scrollTop = 0;
+
+// Анимация появления шага
+cookStepText.classList.remove('cook-step-finish');
+void cookStepText.offsetWidth;
+cookStepText.classList.add('cook-step-finish');
 
 const t = parseTime(cookState.steps[i]);
 cookTimerArea.innerHTML = t
@@ -1686,10 +1860,15 @@ await toggleCooked(id);
 } else {
 await moveWishlistToRecipes(id);
 }
-launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
+// Салют в центре
+const cx = window.innerWidth / 2;
+const cy = window.innerHeight / 3;
+launchConfetti(cx, cy);
+launchEmojiBurst(cx, cy);
+playSuccessSound();
 } catch (e) {
 console.error(e);
-alert('Не удалось сохранить отметку');
+showToast('Не удалось сохранить отметку', { type: 'error' });
 }
 }
 // ===== ПОДБОРКИ =====
@@ -2677,6 +2856,25 @@ stopGlobalTimer();
 modal.style.display = 'block';
 modal.classList.add('show');
 modal.scrollTo({ top: 0, behavior: 'smooth' });
+
+// Активируем sticky-эффект заголовка при скролле
+requestAnimationFrame(() => {
+  const stickyHead = modal.querySelector('.modal-sticky-head');
+  if (!stickyHead) return;
+
+  const onScroll = () => {
+    if (modal.scrollTop > 80) {
+      stickyHead.classList.add('scrolled');
+    } else {
+      stickyHead.classList.remove('scrolled');
+    }
+  };
+  // Убираем старый обработчик, если был
+  if (modal._stickyHandler) modal.removeEventListener('scroll', modal._stickyHandler);
+  modal._stickyHandler = onScroll;
+  modal.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+});
 } catch (e) {
 console.error(e);
 showToast('Ошибка при открытии рецепта', { type: 'error' });
@@ -2694,7 +2892,7 @@ function closeModal() {
   }, 250);
 }
 closeModalBtn.addEventListener('click', closeModal);
-
+document.getElementById('closeModalFloat').addEventListener('click', closeModal);
 editFromModalBtn.addEventListener('click', () => {
 if (!currentRecipeId) return;
 startEdit(currentRecipeId);
