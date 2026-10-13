@@ -502,12 +502,6 @@ function formatSteps(raw) {
     .join('\n');
 }
 
-  // 3. Иначе — нумеруем и убираем старые маркеры
-  return parts
-    .map((l, i) => `${i + 1}. ${l.replace(/^[-•\d.)\s]+/, '').trim()}`)
-    .join('\n');
-}
-
 function updateIngHint() {
   const items = ingredientsInput.value
     .split(/[,\n]+/)
@@ -1672,7 +1666,7 @@ modal.style.display = 'none';
 titleInput.value = r.title || '';
 categoryInput.value = r.category || '';
 ingredientsInput.value = r.ingredientsShort || '';
-stepsInput.value = r.steps || '';
+stepsInput.value = formatSteps(r.steps || '');
 linkInput.value = r.link || '';
 imageInput.value = '';
 updateIngHint();
