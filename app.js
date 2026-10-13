@@ -250,7 +250,8 @@ const map = {
 'десерт': 'cat-dessert', 'суп': 'cat-soup', 'салат': 'cat-salad',
 'холодная закуска': 'cat-cold-snack', 'горячая закуска': 'cat-hot-snack',
 'выпечка сладкая': 'cat-sweet-pastry', 'выпечка не сладкая': 'cat-savory-pastry',
-'вторые блюда': 'cat-main', 'гарниры': 'cat-side'
+'вторые блюда': 'cat-main', 'гарниры': 'cat-side',
+'соусы': 'cat-sauce', 'напитки': 'cat-drink'
 };
 return map[cat] || '';
 }
