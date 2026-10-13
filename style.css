@@ -34,6 +34,8 @@ body.large-font h1 { font-size: 1.9em; }
 .bg-savory-pastry { background: linear-gradient(160deg, #603813 0%, #b29f94 100%) !important; }
 .bg-main { background: linear-gradient(160deg, #2193b0 0%, #6dd5ed 100%) !important; }
 .bg-side { background: linear-gradient(160deg, #e8d8a0 0%, #d4a857 100%) !important; }
+.bg-sauce { background: linear-gradient(160deg, #eb3349 0%, #f45c43 100%) !important; }
+.bg-drink { background: linear-gradient(160deg, #2193b0 0%, #6dd5ed 100%) !important; }
 
 /* Декоративная «кухонная» шапка */
 .kitchen-banner {
@@ -228,6 +230,8 @@ font-size: 0.85em; font-weight: 600; color: white; margin-bottom: 8px;
 .cat-savory-pastry { background: #34495e; }
 .cat-main { background: #2980b9; }
 .cat-side { background: #16a085; }
+.cat-sauce { background: #c0392b; }
+.cat-drink { background: #3498db; }
 
 .rating-line { color: #e67e22; font-size: 1em; margin: 4px 0; font-weight: 600; }
 .rating-count { color: #777; font-size: 0.85em; font-weight: 400; }
