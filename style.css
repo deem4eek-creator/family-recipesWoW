@@ -867,3 +867,63 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
   transform: rotate(3deg);
   transition: transform 0.3s ease;
 }
+/* ===== ЖИВОЕ ПРЕВЬЮ ПОЛЕЙ ===== */
+.field-preview {
+  margin: -4px 0 12px 0;
+  padding: 10px 12px;
+  background: rgba(240,248,245,0.6);
+  border-radius: 8px;
+  font-size: 0.85em;
+  animation: previewFadeIn 0.25s ease;
+  min-height: 0;
+}
+.field-preview:empty {
+  display: none;
+}
+@keyframes previewFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.preview-title {
+  font-weight: 700;
+  color: #2c7a4b;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+}
+.preview-chip {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #d4e5d9;
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin: 2px 4px 2px 0;
+  font-size: 0.85em;
+  color: #333;
+}
+.preview-step {
+  padding: 4px 0;
+  color: #444;
+  line-height: 1.35;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.preview-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: #e67e22;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.preview-more {
+  margin-top: 4px;
+  font-size: 0.85em;
+  color: #888;
+  font-style: italic;
+}
