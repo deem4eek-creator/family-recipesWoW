@@ -474,21 +474,33 @@ return raw
 function formatSteps(raw) {
   if (!raw || !raw.trim()) return raw;
 
-  // 1. Разбиваем по переносам строк И по точкам (если после точки — заглавная буква)
-  //    (?<=\.)\s+(?=[А-ЯA-ZЁ]) — точка, пробел(ы), заглавная буква
-  let parts = raw
+  // 1. Заменяем ". Заглавная" на ".\nЗаглавная" — безопаснее, чем split с lookbehind
+  const withBreaks = raw.replace(/\.\s+(?=[А-ЯЁA-Z])/g, '.\n');
+
+  // 2. Разбиваем по переносам строк, обрезаем, убираем пустое
+  const parts = withBreaks
     .split(/\n+/)
-    .flatMap(line => line.split(/(?<=\.)\s+(?=[А-ЯЁA-Z])/))
     .map(s => s.trim())
-    .filter(Boolean);
+    .filter(s => s.length > 0);
 
   if (parts.length === 0) return raw;
 
-  // 2. Если уже пронумерованы — оставляем как есть (но убираем дублирующую нумерацию)
-  const numbered = parts.filter(l => /^\d+[.)]\s/.test(l)).length;
-  if (numbered >= parts.length * 0.6) {
-    return parts.join('\n');
-  }
+  // 3. Чистим каждый шаг: убираем старую нумерацию, маркеры, лишние пробелы
+  const cleaned = parts
+    .map(s => s
+      .replace(/^\d+[.)]\s*/, '')   // "1. " или "1) "
+      .replace(/^[-•*]\s*/, '')     // "- " или "• "
+      .trim()
+    )
+    .filter(s => s.length > 0);     // ← финальная зачистка пустых
+
+  if (cleaned.length === 0) return raw;
+
+  // 4. Всегда нумеруем заново — от 1 до N
+  return cleaned
+    .map((l, i) => `${i + 1}. ${l}`)
+    .join('\n');
+}
 
   // 3. Иначе — нумеруем и убираем старые маркеры
   return parts
@@ -548,7 +560,10 @@ function updateStepsPreview() {
 
   // Временно применяем formatSteps, чтобы увидеть результат
   const formatted = formatSteps(raw);
-  const parts = formatted.split('\n').filter(Boolean);
+  const parts = formatted
+  .split('\n')
+  .map(s => s.trim())
+  .filter(s => s.length > 0);
 
   if (parts.length === 0) {
     preview.innerHTML = '';
