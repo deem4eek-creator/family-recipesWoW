@@ -106,11 +106,13 @@
 </div>
 <div class="dictation-hint" id="dictIngredientsHint"></div>
 <div class="ing-hint" id="ingHint"></div>
+<div id="ingredientsPreview" class="field-preview"></div>
 <div class="dictation-row">
 <textarea id="recipeSteps" placeholder="Шаги приготовления: напишите или нажмите 🎤 и диктуйте по шагам" rows="4"></textarea>
 <button id="micSteps" class="mic-btn" title="Диктовать шаги голосом">🎤</button>
 </div>
 <div class="dictation-hint" id="dictStepsHint"></div>
+<div id="stepsPreview" class="field-preview"></div>
 <input id="recipeLink" placeholder="Ссылка на источник (если есть)">
 <input type="file" id="recipeImage" accept="image/*" multiple>
 <small style="display:block; margin-bottom:8px; color:#777;">Можно выбрать до 4 фото: первое станет главным, остальные — подсказками к шагам.</small>
@@ -284,7 +286,6 @@ navigator.serviceWorker.register('./sw.js')
 
 </body>
 </html>
-
 
 
 
