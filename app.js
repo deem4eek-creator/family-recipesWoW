@@ -472,20 +472,54 @@ return raw
 }
 
 function formatSteps(raw) {
-const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
-if (lines.length === 0) return raw;
-const numbered = lines.filter(l => /^\d+[.)]\s/.test(l)).length;
-if (numbered >= lines.length * 0.6) return lines.join('\n');
-return lines.map((l, i) => `${i + 1}. ${l.replace(/^[-•\s]+/, '')}`).join('\n');
+  if (!raw || !raw.trim()) return raw;
+
+  // 1. Разбиваем по переносам строк И по точкам (если после точки — заглавная буква)
+  //    (?<=\.)\s+(?=[А-ЯA-ZЁ]) — точка, пробел(ы), заглавная буква
+  let parts = raw
+    .split(/\n+/)
+    .flatMap(line => line.split(/(?<=\.)\s+(?=[А-ЯЁA-Z])/))
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (parts.length === 0) return raw;
+
+  // 2. Если уже пронумерованы — оставляем как есть (но убираем дублирующую нумерацию)
+  const numbered = parts.filter(l => /^\d+[.)]\s/.test(l)).length;
+  if (numbered >= parts.length * 0.6) {
+    return parts.join('\n');
+  }
+
+  // 3. Иначе — нумеруем и убираем старые маркеры
+  return parts
+    .map((l, i) => `${i + 1}. ${l.replace(/^[-•\d.)\s]+/, '').trim()}`)
+    .join('\n');
 }
 
 function updateIngHint() {
-const items = ingredientsInput.value.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
-if (items.length === 0) {
-ingHint.textContent = '';
-} else {
-ingHint.textContent = `🥕 ${items.length} ${items.length === 1 ? 'ингредиент' : items.length < 5 ? 'ингредиента' : 'ингредиентов'} — при выходе из поля всё красиво оформится`;
-}
+  const items = ingredientsInput.value
+    .split(/[,\n]+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (items.length === 0) {
+    ingHint.textContent = '';
+  } else {
+    ingHint.textContent = `🥕 ${items.length} ${items.length === 1 ? 'ингредиент' : items.length < 5 ? 'ингредиента' : 'ингредиентов'} — по запятым и Enter`;
+  }
+
+  // Живое превью
+  const preview = document.getElementById('ingredientsPreview');
+  if (!preview) return;
+  if (items.length === 0) {
+    preview.innerHTML = '';
+  } else {
+    preview.innerHTML = '<div class="preview-title">Так будет выглядеть список:</div>' +
+      items.slice(0, 8).map(i =>
+        `<span class="preview-chip">${escapeHtml(i)}</span>`
+      ).join('') +
+      (items.length > 8 ? `<span class="preview-more">+${items.length - 8} ещё</span>` : '');
+  }
 }
 ingredientsInput.addEventListener('input', updateIngHint);
 
@@ -495,9 +529,38 @@ if (f) ingredientsInput.value = f;
 updateIngHint();
 });
 stepsInput.addEventListener('blur', () => {
-const f = formatSteps(stepsInput.value);
-if (f) stepsInput.value = f;
+  const f = formatSteps(stepsInput.value);
+  if (f) stepsInput.value = f;
+  updateStepsPreview();
 });
+
+stepsInput.addEventListener('input', updateStepsPreview);
+
+function updateStepsPreview() {
+  const preview = document.getElementById('stepsPreview');
+  if (!preview) return;
+
+  const raw = stepsInput.value.trim();
+  if (!raw) {
+    preview.innerHTML = '';
+    return;
+  }
+
+  // Временно применяем formatSteps, чтобы увидеть результат
+  const formatted = formatSteps(raw);
+  const parts = formatted.split('\n').filter(Boolean);
+
+  if (parts.length === 0) {
+    preview.innerHTML = '';
+    return;
+  }
+
+  preview.innerHTML = '<div class="preview-title">Так будет выглядеть (' + parts.length + ' шаг' + (parts.length === 1 ? '' : parts.length < 5 ? 'а' : 'ов') + '):</div>' +
+    parts.slice(0, 6).map((p, i) =>
+      `<div class="preview-step"><span class="preview-num">${i + 1}</span> ${escapeHtml(p.replace(/^\d+[.)]\s*/, ''))}</div>`
+    ).join('') +
+    (parts.length > 6 ? `<div class="preview-more">+${parts.length - 6} ещё</div>` : '');
+}
 
 // --- Диктовка голосом ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
