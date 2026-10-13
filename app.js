@@ -1234,7 +1234,8 @@ const bgMap = {
 'десерт': 'bg-dessert', 'суп': 'bg-soup', 'салат': 'bg-salad',
 'холодная закуска': 'bg-cold-snack', 'горячая закуска': 'bg-hot-snack',
 'выпечка сладкая': 'bg-sweet-pastry', 'выпечка не сладкая': 'bg-savory-pastry',
-'вторые блюда': 'bg-main', 'гарниры': 'bg-side'
+'вторые блюда': 'bg-main', 'гарниры': 'bg-side',
+'соусы': 'bg-sauce', 'напитки': 'bg-drink'
 };
 let bgClass = 'bg-all';
 if (currentView === 'wishlist') {
