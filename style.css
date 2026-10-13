@@ -1,0 +1,869 @@
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+font-family: 'Nunito', system-ui, sans-serif; max-width: 700px; margin: 0 auto; padding: 16px;
+min-height: 100vh;
+transition: background 0.6s ease;
+background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%);
+background-attachment: fixed;
+}
+/* Лёгкая текстура бумаги на фоне */
+body::before {
+content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+opacity: 0.55;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+h1, h2, h3, h4 { font-family: 'Comfortaa', 'Nunito', sans-serif; }
+
+body.large-font { font-size: 118%; }
+body.large-font .card { font-size: 1.15em; }
+body.large-font input, body.large-font textarea, body.large-font select, body.large-font button { font-size: 20px; }
+body.large-font .category-badge, body.large-font .fav-badge, body.large-font .cooked-badge { font-size: 0.95em; }
+body.large-font .ingredients-list { font-size: 1.05em; }
+body.large-font h3 { font-size: 1.5em; }
+body.large-font h1 { font-size: 1.9em; }
+
+.bg-all { background: linear-gradient(160deg, #fdf6e3 0%, #f5e6c8 100%) !important; }
+.bg-wishlist{ background: linear-gradient(160deg, #ffecd2 0%, #fcb69f 60%, #f78ca0 100%) !important; }
+.bg-soup { background: linear-gradient(160deg, #2c5364 0%, #6dd5ed 100%) !important; }
+.bg-salad { background: linear-gradient(160deg, #56ab2f 0%, #a8e063 100%) !important; }
+.bg-dessert { background: linear-gradient(160deg, #ee9ca7 0%, #ffdde1 100%) !important; }
+.bg-cold-snack { background: linear-gradient(160deg, #f6d365 0%, #fda085 100%) !important; }
+.bg-hot-snack { background: linear-gradient(160deg, #ff9966 0%, #ff5e62 100%) !important; }
+.bg-sweet-pastry { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%) !important; }
+.bg-savory-pastry { background: linear-gradient(160deg, #603813 0%, #b29f94 100%) !important; }
+.bg-main { background: linear-gradient(160deg, #2193b0 0%, #6dd5ed 100%) !important; }
+.bg-side { background: linear-gradient(160deg, #e8d8a0 0%, #d4a857 100%) !important; }
+
+/* Декоративная «кухонная» шапка */
+.kitchen-banner {
+background: linear-gradient(180deg, #fffaf0 0%, #fdf3e0 100%);
+border: 1px solid rgba(122,74,31,0.15);
+border-radius: 14px;
+padding: 16px 16px 14px;
+margin-bottom: 10px;
+text-align: center;
+box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+position: relative; z-index: 1;
+}
+.pot-line { position: relative; font-size: 2.2em; line-height: 1; display: inline-block; }
+.steam {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,230,230,0.95) 20%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0) 100%);
+  filter: blur(3px);
+  opacity: 0;
+  animation: steamRise 4s ease-in infinite;
+  pointer-events: none;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(200,200,200,0.4);
+}
+.steam.s2 {
+  margin-left: -22px;
+  animation-delay: 1.4s;
+  animation-duration: 4.5s;
+}
+.steam.s3 {
+  margin-left: 20px;
+  animation-delay: 2.6s;
+  animation-duration: 5s;
+}
+
+@keyframes steamRise {
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(calc(-50% - 8px), -35px) scale(1.3);
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(calc(-50% + 6px), -70px) scale(2);
+    opacity: 0;
+  }
+}
+.kitchen-banner h1 { margin: 0; color: #7a4a1f; font-size: 1.7em; font-weight: 700; }
+.banner-note {
+font-family: 'Comfortaa', sans-serif;
+color: #a07848; font-size: 0.85em; margin-top: 4px; letter-spacing: 0.06em;
+}
+.gingham {
+height: 9px; margin-top: 12px; border-radius: 5px; opacity: 0.5;
+background: repeating-linear-gradient(90deg, #d9534f 0 10px, transparent 10px 20px),
+repeating-linear-gradient(90deg, transparent 0 5px, #f6e0b5 5px 15px);
+background-color: #fdf6e3;
+}
+.header-actions-row {
+display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+}
+.header-actions-row button { min-height: 42px; min-width: 42px; padding: 6px 12px; margin: 0; }
+
+.card {
+border: 1px solid rgba(0,0,0,0.08);
+border-radius: 12px; padding: 16px; margin-bottom: 16px;
+background: rgba(255,255,255,0.94);
+box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+transition: background 0.3s ease, border 0.3s ease, transform 0.25s ease, box-shadow 0.25s ease;
+cursor: pointer;
+position: relative; z-index: 1;
+}
+/*.card.recipe-card { animation: fadeUp 0.45s ease both; }
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(16px); }
+to { opacity: 1; transform: translateY(0); }
+}*/
+@media (hover: hover) {
+.card.recipe-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
+}
+.card.cooked { background: #eafaf1; border: 1px solid #2ecc71; }
+.cooked-badge {
+display: inline-block; padding: 3px 10px; border-radius: 4px;
+font-size: 0.8em; font-weight: 700; color: #1e7e45;
+background: #d1f2e0; margin-left: 8px; vertical-align: middle;
+}
+.fav-badge {
+display: inline-block; padding: 3px 10px; border-radius: 4px;
+font-size: 0.8em; font-weight: 700; color: #9a6b00;
+background: #fff3c4; margin-left: 4px; vertical-align: middle;
+}
+
+/* Пустые состояния с душой */
+.empty-state {
+text-align: center; padding: 30px 16px;
+background: rgba(255,255,255,0.88);
+border: 1px dashed #d9c9a8; border-radius: 12px;
+color: #7a4a1f;
+}
+.empty-state .es-icon { font-size: 2.8em; line-height: 1; }
+.empty-state p { margin: 10px 0 0; font-size: 1.05em; }
+
+/* Карточка-«полароид» */
+.polaroid {
+background: #fff; padding: 10px 10px 30px;
+box-shadow: 0 5px 14px rgba(0,0,0,0.18);
+transform: rotate(-1.5deg);
+border-radius: 4px;
+margin: 14px auto 8px;
+width: fit-content; max-width: 100%;
+transition: transform 0.3s ease;
+}
+.polaroid:hover { transform: rotate(0deg) scale(1.02); }
+.polaroid img { margin-top: 0; border-radius: 0; box-shadow: none; }
+.polaroid-caption {
+font-family: 'Comfortaa', sans-serif; font-size: 0.78em; color: #8a7a66;
+text-align: center; margin-top: 8px;
+}
+
+input, textarea, select, button { padding: 10px 12px; display: block; width: 100%; margin-bottom: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 16px; }
+button {
+background: #4a90e2; color: white; border: none; border-radius: 8px;
+cursor: pointer; font-weight: 600;
+min-height: 46px; font-size: 16px;
+}
+button:hover { background: #357abd; }
+button.delete-btn { background: #d9534f; }
+button.delete-btn:hover { background: #c9302c; }
+button.edit-btn { background: #f39c12; }
+button.edit-btn:hover { background: #d68910; }
+button.done-btn { background: #2ecc71; }
+button.done-btn:hover { background: #27ae60; }
+button.logout-btn { background: #37474f; width: auto; }
+button.ghost-btn { background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd; }
+button.ghost-btn:hover { background: #f0f0f0; }
+button.tts-active { background: #d9534f; }
+
+.icon-btn {
+width: 56px; min-width: 56px; height: 46px; padding: 0;
+font-size: 24px; line-height: 1; margin-bottom: 0;
+background: rgba(255,255,255,0.95); color: #aaa;
+border: 1px solid #ddd;
+}
+.icon-btn:hover { background: #f0f0f0; }
+.icon-btn.fav-active { color: #f39c12; border-color: #f39c12; background: #fff7e0; }
+.icon-btn.cooked-active { color: #27ae60; border-color: #27ae60; background: #eafaf1; }
+
+img { max-width: 100%; border-radius: 6px; margin-top: 8px; display: block; }
+.meta { color: #555; font-size: 0.9em; margin-top: 4px; }
+
+.ingredients-list {
+margin: 6px 0 0 0; padding: 8px 8px 8px 24px;
+background: rgba(240,248,245,0.7); border-radius: 8px;
+font-size: 0.95em;
+}
+.ingredients-list li { margin-bottom: 3px; }
+
+.photo-strip { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
+.photo-strip img {
+width: 84px; height: 84px; object-fit: cover; border-radius: 8px;
+margin-top: 0; flex-shrink: 0; border: 1px solid #ddd;
+}
+.modal-gallery { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 8px; }
+.modal-gallery img {
+width: 96px; height: 96px; object-fit: cover; border-radius: 8px;
+margin-top: 0; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;
+}
+.modal-gallery img.selected { border-color: #4a90e2; }
+
+.category-badge {
+display: inline-block; padding: 4px 10px; border-radius: 4px;
+font-size: 0.85em; font-weight: 600; color: white; margin-bottom: 8px;
+}
+.cat-dessert { background: #8e44ad; }
+.cat-soup { background: #2c3e50; }
+.cat-salad { background: #27ae60; }
+.cat-cold-snack { background: #f1c40f; color: #000; }
+.cat-hot-snack { background: #e67e22; }
+.cat-sweet-pastry { background: #9b59b6; }
+.cat-savory-pastry { background: #34495e; }
+.cat-main { background: #2980b9; }
+.cat-side { background: #16a085; }
+
+.rating-line { color: #e67e22; font-size: 1em; margin: 4px 0; font-weight: 600; }
+.rating-count { color: #777; font-size: 0.85em; font-weight: 400; }
+
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn {
+background: rgba(255,255,255,0.9); color: #333; border: 1px solid #ddd;
+border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 600; min-height: 46px;
+}
+.tab-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; }
+.login-card { max-width: 350px; width: 100%; padding: 24px; border-radius: 12px; background: rgba(255,255,255,0.96); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.login-card h2 { text-align: center; margin-bottom: 16px; }
+.login-error { color: #d9534f; font-size: 0.9em; margin-bottom: 8px; display: none; }
+
+.ing-hint {
+font-size: 0.85em; color: #2c7a4b; margin: -4px 0 8px 0;
+display: flex; align-items: center; gap: 4px; min-height: 1.2em;
+}
+
+/* Кнопка диктовки + звуковые волны */
+.dictation-row { display: flex; gap: 8px; align-items: stretch; }
+.dictation-row textarea { flex: 1; }
+.mic-btn {
+width: 56px; min-width: 56px; padding: 0; margin-bottom: 8px;
+font-size: 22px; line-height: 1;
+background: #fff; color: #555; border: 1px solid #ddd;
+position: relative;
+}
+.mic-btn:hover { background: #f0f0f0; }
+.mic-btn.recording {
+background: #d9534f; color: white; border-color: #d9534f;
+animation: micPulse 1.2s infinite;
+}
+@keyframes micPulse {
+0% { box-shadow: 0 0 0 0 rgba(217,83,79,0.45); }
+70% { box-shadow: 0 0 0 14px rgba(217,83,79,0); }
+100% { box-shadow: 0 0 0 0 rgba(217,83,79,0); }
+}
+.mic-btn.recording::before, .mic-btn.recording::after {
+content: ''; position: absolute; inset: 0;
+border-radius: 8px; border: 2px solid rgba(217,83,79,0.55);
+animation: micRing 1.6s ease-out infinite;
+pointer-events: none;
+}
+.mic-btn.recording::after { animation-delay: 0.8s; }
+@keyframes micRing {
+from { transform: scale(1); opacity: 0.7; }
+to { transform: scale(1.9); opacity: 0; }
+}
+.dictation-hint {
+font-size: 0.85em; color: #d9534f; margin: -4px 0 8px 0; min-height: 1.2em;
+}
+
+/* Анимация звёзд при оценке */
+.stars-input { display: flex; gap: 4px; margin-bottom: 8px; }
+.stars-input button {
+width: 52px; height: 52px; font-size: 26px; padding: 0; margin-bottom: 0;
+background: #f5f5f5; color: #ccc; border: 1px solid #ddd; border-radius: 8px;
+}
+.stars-input button.active { color: #f39c12; background: #fff7e0; border-color: #f39c12; }
+.stars-input button.pop { animation: starPop 0.4s ease; }
+@keyframes starPop {
+0% { transform: scale(1); }
+40% { transform: scale(1.35) rotate(-8deg); }
+100% { transform: scale(1); }
+}
+.review-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #ddd; }
+.review-stars { color: #f39c12; }
+
+.edit-notice { background: #fff7e0; border: 1px solid #f39c12; border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 0.9em; display: none; }
+
+.favorites-toggle {
+display: flex; align-items: center; gap: 6px;
+background: rgba(255,255,255,0.95); border: 1px solid #ddd;
+border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600;
+user-select: none; white-space: nowrap; min-height: 46px;
+}
+.favorites-toggle input { width: auto; margin: 0; }
+.favorites-toggle.active { border-color: #f39c12; background: #fff7e0; }
+
+/* Конфетти */
+.confetti {
+position: fixed; z-index: 4000; pointer-events: none;
+border-radius: 2px;
+animation: confettiFly 0.9s ease-out forwards;
+}
+@keyframes confettiFly {
+from { transform: translate(0,0) rotate(0deg); opacity: 1; }
+to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+
+/* Шаги с кнопками таймера */
+.step-line { margin-bottom: 8px; }
+.timer-inline {
+display: inline-block; width: auto; min-height: 38px; padding: 4px 14px; margin: 4px 0 0;
+font-size: 0.9em; background: #fff3c4; color: #7a4a1f;
+border: 1px solid #f39c12; border-radius: 8px; font-weight: 600;
+}
+.timer-inline:hover { background: #ffe9a8; }
+
+/* Пересчёт порций */
+.portions-box {
+display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+background: rgba(240,248,245,0.8); border-radius: 8px; padding: 10px; margin-bottom: 8px;
+}
+.portions-box input { width: 84px; margin: 0; text-align: center; }
+.portions-box button { width: auto; margin: 0; min-height: 44px; padding: 8px 14px; }
+.portions-note { font-size: 0.85em; color: #777; margin-top: 6px; }
+
+/* Глобальный таймер */
+.timer-banner {
+position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 3500;
+background: #2c3e50; color: #fff; border-radius: 14px;
+padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+display: none; align-items: center; justify-content: space-between; gap: 12px;
+}
+.timer-banner .tb-label { font-size: 0.85em; opacity: 0.8; }
+.timer-banner .tb-time { font-size: 1.7em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.timer-banner button { width: auto; min-height: 44px; margin: 0; padding: 8px 18px; background: #d9534f; }
+
+/* РЕЖИМ ГОТОВКИ */
+.cook-mode {
+position: fixed; inset: 0; z-index: 3000;
+background: linear-gradient(160deg, #fff8ec 0%, #f7ead2 100%);
+display: none; flex-direction: column; padding: 16px;
+}
+.cook-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cook-dish {
+font-family: 'Comfortaa', sans-serif; font-weight: 700;
+color: #7a4a1f; font-size: 1.05em;
+overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cook-exit {
+width: auto; min-height: 44px; padding: 8px 14px; margin: 0;
+background: rgba(255,255,255,0.95); color: #333; border: 1px solid #ddd;
+}
+.cook-dots { text-align: center; font-size: 1.5em; color: #d9c9a8; letter-spacing: 6px; margin: 10px 0 4px; }
+.cook-dots .on { color: #e67e22; }
+.cook-stepnum { text-align: center; color: #a07848; font-size: 0.95em; margin-bottom: 10px; }
+.cook-text {
+flex: 1; display: flex; align-items: center; overflow-y: auto;
+font-size: 1.75em; line-height: 1.45; color: #3a2a18; font-weight: 600;
+padding: 8px 4px;
+}
+.cook-timer-area { text-align: center; min-height: 60px; margin: 8px 0; }
+.cook-timer-btn {
+width: auto; min-height: 52px; padding: 10px 22px; margin: 0;
+background: #fff3c4; color: #7a4a1f; border: 1px solid #f39c12;
+font-size: 1.05em; font-weight: 700;
+}
+.cook-timer-btn:hover { background: #ffe9a8; }
+.cook-controls { display: flex; gap: 12px; }
+.cook-controls button { flex: 1; min-height: 68px; font-size: 1.15em; margin: 0; }
+.cook-controls button:disabled { opacity: 0.35; cursor: default; }
+.cook-controls .cook-finish { background: #2ecc71; }
+.cook-controls .cook-finish:hover { background: #27ae60; }
+.install-banner {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: #fdf6e3;
+  border: 1px solid #d4c0a5;
+  border-radius: 24px;
+  padding: 10px 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  max-width: 280px;
+  font-size: 0.85em;
+  animation: installSlideIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes installSlideIn {
+  from { transform: translateY(120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.install-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-icon {
+  font-size: 20px;
+}
+
+.install-text {
+  line-height: 1.3;
+  color: #333;
+  font-size: 13px;
+}
+
+.install-button {
+  background-color: #7a4a1f;
+  color: #fdf6e3;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.install-button:hover {
+  background-color: #633b18;
+}
+
+.install-button:active {
+  transform: scale(0.98);
+}
+
+.hidden {
+  display: none !important;
+}
+/* ===== ПРАЗДНИЧНЫЕ ПОДБОРКИ ===== */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.collection-card {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(122,74,31,0.2);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.collection-card:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,0.13); }
+.collection-card h3 { margin: 0 0 4px; color: #7a4a1f; font-size: 1.15em; }
+.collection-card .cc-meta { font-size: 0.85em; color: #888; }
+.collection-card .cc-emoji { font-size: 1.8em; margin-right: 6px; }
+.collection-card .cc-del {
+  position: absolute; top: 8px; right: 8px;
+  width: 34px; height: 34px; min-height: 34px; padding: 0;
+  border-radius: 50%; background: #fff; color: #d9534f; border: 1px solid #ddd;
+  font-size: 16px; line-height: 1;
+}
+.collection-card .cc-del:hover { background: #d9534f; color: #fff; }
+
+.collection-drop-hint {
+  border: 2px dashed #d9c9a8; border-radius: 12px;
+  padding: 12px; text-align: center; color: #a07848; font-size: 0.9em;
+  margin-bottom: 14px; background: rgba(255,255,255,0.6);
+}
+.collection-drop-hint.drag-over { border-color: #4a90e2; background: #eaf3ff; color: #2c6cb0; }
+
+.collection-detail-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.collection-detail-head h2 { margin: 0; color: #7a4a1f; }
+
+.dragging { opacity: 0.45; }
+
+.cooked-collection-note {
+  display: inline-block; margin: 4px 4px 0 0; padding: 3px 8px;
+  background: #eafaf1; color: #1e7e45; border-radius: 6px;
+  font-size: 0.8em; font-weight: 600;
+}
+
+/* Модалка создания подборки */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000;
+  display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 14px; padding: 20px; width: 100%; max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.modal-box h3 { margin-top: 0; color: #7a4a1f; }
+.modal-box input { margin-bottom: 12px; }
+.modal-box .btn-row { display: flex; gap: 8px; }
+.modal-box .btn-row button { flex: 1; }
+/* Список подборок в модалке */
+.collection-pick-list { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; margin-bottom: 12px; }
+.collection-pick-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px;
+  background: #faf7f0; border: 1px solid #e8dfc9;
+  cursor: pointer; font-size: 1em; text-align: left;
+  width: 100%; margin: 0; color: #333; font-weight: 600;
+}
+.collection-pick-item:hover { background: #f2ead6; border-color: #d4bf94; }
+.collection-pick-item .cp-emoji { font-size: 1.4em; }
+.collection-pick-item .cp-count { margin-left: auto; font-size: 0.85em; color: #888; font-weight: 400; }
+/* ===== TOAST-УВЕДОМЛЕНИЯ ===== */
+.toast-container {
+  position: fixed; top: 16px; right: 16px; left: 16px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none; align-items: flex-end;
+}
+.toast {
+  background: rgba(255,255,255,0.98);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 5px solid #4a90e2;
+  display: flex; align-items: center; gap: 12px;
+  max-width: 380px; min-width: 260px;
+  font-size: 0.95em; font-weight: 600; color: #333;
+  pointer-events: auto;
+  animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  transform-origin: top right;
+}
+.toast.hide { animation: toastOut 0.3s ease forwards; }
+.toast .toast-icon { font-size: 1.5em; line-height: 1; flex-shrink: 0; }
+.toast .toast-body { flex: 1; }
+.toast .toast-title { display: block; margin-bottom: 2px; }
+.toast .toast-sub { display: block; font-size: 0.82em; color: #777; font-weight: 400; margin-top: 2px; }
+.toast.toast-success { border-left-color: #2ecc71; }
+.toast.toast-error { border-left-color: #d9534f; }
+.toast.toast-info { border-left-color: #4a90e2; }
+.toast.toast-warn { border-left-color: #f39c12; }
+
+@keyframes toastIn {
+  from { transform: translateX(120%) scale(0.9); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes toastOut {
+  from { transform: translateX(0) scale(1); opacity: 1; }
+  to { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+
+/* ===== RIPPLE-ЭФФЕКТ НА КНОПКАХ ===== */
+button, .tab-btn, .collection-card, .icon-btn, .collection-pick-item {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  transform: scale(0);
+  animation: rippleAnim 0.6s ease-out;
+  pointer-events: none;
+}
+button.ghost-btn .ripple, .tab-btn .ripple,
+.collection-card .ripple, .collection-pick-item .ripple {
+  background: rgba(122,74,31,0.25);
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ===== ПЛАВНЫЕ МОДАЛКИ ===== */
+.modal-overlay {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.show {
+  display: flex;
+  opacity: 1;
+}
+.modal-box {
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.modal-overlay.show .modal-box {
+  transform: scale(1) translateY(0);
+}
+
+/* Модалка рецепта (#recipeModal) — отдельная анимация */
+#recipeModal {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#recipeModal.show {
+  display: block;
+  opacity: 1;
+  animation: modalSlideUp 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes modalSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== ПЛАВНОЕ ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ===== */
+.tab-btn { transition: all 0.25s ease; }
+.tab-btn.active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(44,62,80,0.25);
+}
+
+/* ===== АНИМАЦИЯ КНОПОК ПРИ НАЖАТИИ ===== */
+button:active:not(:disabled) { transform: scale(0.97); }
+button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease; }
+
+/* ===== АНИМАЦИЯ ИКОНОК (⭐ ✓ 🎤 🔊) ===== */
+.icon-btn, .mic-btn {
+  transition: transform 0.15s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.icon-btn:active, .mic-btn:active { transform: scale(0.88); }
+.icon-btn.fav-active { animation: starPop 0.5s ease; }
+.icon-btn.cooked-active { animation: checkPop 0.5s ease; }
+@keyframes checkPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35) rotate(8deg); }
+  100% { transform: scale(1); }
+}
+
+/* ===== SKELETON-ЗАГРУЗКА ===== */
+.skeleton-card {
+  background: rgba(255,255,255,0.7);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+.skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #eee 0%, #f5f5f5 50%, #eee 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s infinite;
+}
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-40 { width: 40%; }
+.skeleton-line.w-90 { width: 90%; }
+.skeleton-img {
+  height: 160px;
+  border-radius: 8px;
+  margin: 12px 0;
+  background: linear-gradient(90deg, #eee 0%, #f5f5f5 50%, #eee 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s infinite;
+}
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+/* ===== АНИМАЦИЯ ПОЯВЛЕНИЯ КАРТОЧЕК (каскад) ===== */
+.card.recipe-card {
+  animation: cardEnter 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+@keyframes cardEnter {
+  0% { opacity: 0; transform: translateY(24px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== ВЗРЫВ ЭМОДЗИ при «Приготовил» ===== */
+.emoji-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 5000;
+  font-size: 1.8em;
+  animation: emojiFly 1.2s ease-out forwards;
+  will-change: transform, opacity;
+}
+@keyframes emojiFly {
+  0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 0; }
+  20% { transform: translate(calc(var(--dx) * 0.2), calc(var(--dy) * 0.2 - 20px)) scale(1.2) rotate(calc(var(--rot) * 0.3)); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(var(--rot)); opacity: 0; }
+}
+
+/* ===== СВЕЧЕНИЕ КАРТОЧКИ при «Приготовил» ===== */
+.card.recipe-card.cooked-flash {
+  animation: cookedFlash 1s ease-out;
+}
+@keyframes cookedFlash {
+  0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.6); }
+  50% { box-shadow: 0 0 0 20px rgba(46,204,113,0); }
+  100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+}
+
+/* ===== ПЛАВНОЕ ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ===== */
+#recipesList, #collectionsView {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#recipesList.view-fade-out, #collectionsView.view-fade-out {
+  opacity: 0;
+  transform: translateY(8px);
+}
+#recipesList.view-fade-in, #collectionsView.view-fade-in {
+  animation: viewFadeIn 0.35s ease both;
+}
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== ПУЛЬСАЦИЯ АКТИВНОЙ ВКЛАДКИ ===== */
+.tab-btn.active {
+  animation: tabPulse 0.4s ease;
+}
+@keyframes tabPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ===== ЭФФЕКТ «ДЫХАНИЕ» ПОЛАРОИДА ===== */
+.polaroid {
+  animation: polaroidBreath 6s ease-in-out infinite;
+}
+@keyframes polaroidBreath {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(-0.3deg) scale(1.005); }
+}
+.polaroid:hover { animation: none; transform: rotate(0deg) scale(1.02); }
+
+/* ===== КАРТОЧКА ПРИ DRAG ===== */
+.card.recipe-card.dragging {
+  opacity: 0.6;
+  transform: rotate(2deg) scale(0.98);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  cursor: grabbing;
+}
+
+/* ===== ПРОГРЕСС ПРИ «ПРИГОТОВИЛ» ===== */
+.cook-flash-green {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(46,204,113,0.5), transparent 70%);
+  border-radius: inherit;
+  animation: greenBurst 0.9s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes greenBurst {
+  0% { opacity: 1; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+/* ===== ПАРАЛЛАКС БАННЕРА ===== */
+.kitchen-banner {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+.kitchen-banner.scrolled {
+  transform: translateY(-6px) scale(0.985);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+}
+.pot-line {
+  transition: transform 0.6s ease;
+}
+.kitchen-banner:hover .pot-line {
+  transform: rotate(-4deg) scale(1.05);
+}
+
+/* ===== STICKY-ЗАГОЛОВОК В МОДАЛКЕ РЕЦЕПТА ===== */
+#recipeModal .modal-sticky-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(255,255,255,0.99) 70%, rgba(255,255,255,0.92) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 14px 16px 12px;
+  margin: -16px -16px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease, padding 0.3s ease;
+}
+#recipeModal .modal-sticky-head.scrolled {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  padding: 10px 16px 10px;
+}
+#recipeModal .modal-sticky-head h2 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #7a4a1f;
+  padding-right: 80px; /* место под кнопку закрытия */
+}
+#recipeModal .modal-close-float {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 44px; height: 44px; min-height: 44px; padding: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  color: #333; border: 1px solid #ddd;
+  font-size: 20px; line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#recipeModal .modal-close-float:hover {
+  background: #f0f0f0;
+  transform: rotate(90deg);
+}
+
+/* ===== ПРОГРЕСС-БАР В РЕЖИМЕ ГОТОВКИ ===== */
+.cook-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(122,74,31,0.12);
+  border-radius: 6px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+  position: relative;
+}
+.cook-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e67e22, #f39c12, #2ecc71);
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-shadow: 0 0 10px rgba(243,156,18,0.4);
+}
+
+/* Заменяем точки на более компактный индикатор */
+.cook-dots {
+  display: none; /* старое скрыто, прогресс-бар вместо */
+}
+
+/* ===== КРАСИВОЕ ЗАВЕРШЕНИЕ ШАГА (в режиме готовки) ===== */
+.cook-step-finish {
+  animation: stepFinish 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes stepFinish {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.collection-card::before {
+  content: '';
+  position: absolute;
+  top: -4px; right: 20px;
+  width: 40px; height: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    #f39c12 0 4px, #fdf6e3 4px 8px
+  );
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  opacity: 0.6;
+}
+.collection-card:hover::before {
+  transform: rotate(3deg);
+  transition: transform 0.3s ease;
+}
