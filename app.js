@@ -261,7 +261,8 @@ const map = {
 'десерт': '🍰', 'суп': '🍲', 'салат': '🥗',
 'холодная закуска': '🧀', 'горячая закуска': '🥘',
 'выпечка сладкая': '🧁', 'выпечка не сладкая': '🥐',
-'вторые блюда': '🍖', 'гарниры': '🍚'
+'вторые блюда': '🍖', 'гарниры': '🍚',
+'соусы': '🥫', 'напитки': '🥤'
 };
 return map[cat] || '🍽️';
 }
@@ -994,16 +995,30 @@ function renderCollectionDetail() {
     if (r2) items.push({ ...r2, _source: 'wishlist' });
   });
 
-  collectionsList.innerHTML = `
-    <div class="collection-detail-head">
-      <h2><span style="font-size:1.2em;">${escapeHtml(c.emoji || '🎉')}</span> ${escapeHtml(c.name)}</h2>
-      <button id="backToCollectionsBtn" class="ghost-btn" style="width:auto; color:#333;">← Назад</button>
-    </div>
-    <div class="collection-drop-hint" id="collectionDropHint">
-      ⬇️ Перетащите сюда рецепт из «Все рецепты» или «Хочу приготовить»
-    </div>
-    <div id="collectionItems"></div>
-  `;
+const shopList = c.shoppingList || [];
+const notBought = shopList.filter(i => !i.bought && !i.haveIt).length;
+const shopCountLabel = notBought > 0 ? ` <span class="shop-count">${notBought}</span>` : '';
+
+collectionsList.innerHTML = `
+  <div class="collection-detail-head">
+    <h2><span style="font-size:1.2em;">${escapeHtml(c.emoji || '🎉')}</span> ${escapeHtml(c.name)}</h2>
+    <button id="backToCollectionsBtn" class="ghost-btn" style="width:auto; color:#333;">← Назад</button>
+  </div>
+
+  <button class="shopping-list-btn" id="openShoppingBtn">
+    🛒 Список покупок${shopCountLabel}
+  </button>
+
+  <div class="collection-drop-hint" id="collectionDropHint">
+    ⬇️ Перетащите сюда рецепт из «Все рецепты» или «Хочу приготовить»
+  </div>
+  <div id="collectionItems"></div>
+`;
+
+// Кнопка списка покупок
+document.getElementById('openShoppingBtn').addEventListener('click', () => {
+  openShoppingList(c.id);
+});
 
   document.getElementById('backToCollectionsBtn').addEventListener('click', () => {
     currentCollectionId = null;
@@ -1217,6 +1232,385 @@ async function markCookedInCollection(recipe, collection) {
     }
   }
 }
+// ===== СПИСОК ПОКУПОК =====
+const shoppingModal = document.getElementById('shoppingModal');
+const shoppingTitle = document.getElementById('shoppingTitle');
+const shoppingSubtitle = document.getElementById('shoppingSubtitle');
+const shoppingBody = document.getElementById('shoppingBody');
+const shoppingProgressFill = document.getElementById('shoppingProgressFill');
+const shoppingProgressText = document.getElementById('shoppingProgressText');
+const shoppingRemainText = document.getElementById('shoppingRemainText');
+const shoppingCloseBtn = document.getElementById('shoppingCloseBtn');
+const shoppingSyncBtn = document.getElementById('shoppingSyncBtn');
+const shoppingShareBtn = document.getElementById('shoppingShareBtn');
+const shoppingCopyBtn = document.getElementById('shoppingCopyBtn');
+const shoppingResetBtn = document.getElementById('shoppingResetBtn');
+
+let currentShoppingCollectionId = null;
+
+// Уникальный id для пункта
+function shoppingUid() {
+  return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// Открытие модалки
+function openShoppingList(collectionId) {
+  const c = allCollections.find(x => x.id === collectionId);
+  if (!c) { showToast('Подборка не найдена', { type: 'error' }); return; }
+
+  currentShoppingCollectionId = collectionId;
+  shoppingTitle.textContent = `🛒 Список покупок — ${c.emoji || '🎉'} ${c.name}`;
+  renderShoppingList();
+  shoppingModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShoppingList() {
+  shoppingModal.classList.remove('show');
+  document.body.style.overflow = '';
+  currentShoppingCollectionId = null;
+}
+
+shoppingCloseBtn.addEventListener('click', closeShoppingList);
+shoppingModal.addEventListener('click', (e) => {
+  if (e.target === shoppingModal) closeShoppingList();
+});
+// ===== Делегирование кликов по списку покупок =====
+shoppingBody.addEventListener('click', async (e) => {
+  const itemEl = e.target.closest('.shopping-item');
+  if (!itemEl) return;
+
+  const id = itemEl.getAttribute('data-id');
+  if (!id) return;
+
+  // Кнопка «Удалить»
+  if (e.target.closest('.shopping-del-btn')) {
+    if (confirm('Удалить пункт из списка?')) {
+      await removeShoppingItem(id);
+    }
+    return;
+  }
+
+  // Кнопка «Уже есть»
+  if (e.target.closest('.shopping-have-btn')) {
+    await toggleShoppingHave(id);
+    return;
+  }
+
+  // Клик по чекбоксу ИЛИ по названию → переключаем «куплено»
+  await toggleShoppingBought(id);
+});
+// Собираем ингредиенты из всех рецептов подборки
+function collectIngredientsFromCollection(collection) {
+  const ids = collection.recipeIds || [];
+  const seen = new Set();
+  const result = [];
+
+  ids.forEach(id => {
+    const r = allRecipes.find(x => x.id === id) || allWishlist.find(x => x.id === id);
+    if (!r || !r.ingredientsShort) return;
+
+    r.ingredientsShort
+      .split(/[,\n]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .forEach(ing => {
+        const key = ing.toLowerCase().replace(/\s+/g, ' ');
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push(ing);
+      });
+  });
+
+  return result;
+}
+
+// Обновить список из рецептов (с сохранением отметок)
+shoppingSyncBtn.addEventListener('click', async () => {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+
+  const fromRecipes = collectIngredientsFromCollection(c);
+  const existing = c.shoppingList || [];
+  const existingMap = new Map();
+  existing.forEach(item => {
+    existingMap.set(item.name.toLowerCase().replace(/\s+/g, ' '), item);
+  });
+
+  const newList = [];
+  // Сначала все существующие — сохраняем отметки
+  fromRecipes.forEach(name => {
+    const key = name.toLowerCase().replace(/\s+/g, ' ');
+    const old = existingMap.get(key);
+    if (old) {
+      newList.push(old); // сохраняем haveIt/bought
+    } else {
+      newList.push({
+        id: shoppingUid(),
+        name,
+        haveIt: false,
+        bought: false,
+        manual: false
+      });
+    }
+  });
+
+  // Оставляем ручные пункты, которые не пересеклись
+  existing.forEach(item => {
+    if (item.manual && !fromRecipes.some(n => n.toLowerCase() === item.name.toLowerCase())) {
+      newList.push(item);
+    }
+  });
+
+  try {
+    await setDoc(doc(db, 'collections', c.id), { shoppingList: newList }, { merge: true });
+    if (newList.length === 0) {
+      showToast('В рецептах подборки не найдено ингредиентов', { type: 'info' });
+    } else {
+      showToast(`Собрано ${newList.length} пунктов`, { type: 'success', icon: '🛒' });
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Не удалось собрать список', { type: 'error' });
+  }
+});
+
+// Сбросить все отметки
+shoppingResetBtn.addEventListener('click', async () => {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+  if (!confirm('Сбросить все отметки? Пункты останутся, отметки «есть/куплено» сбросятся.')) return;
+
+  const newList = (c.shoppingList || []).map(item => ({ ...item, haveIt: false, bought: false }));
+  try {
+    await setDoc(doc(db, 'collections', c.id), { shoppingList: newList }, { merge: true });
+    showToast('Отметки сброшены', { type: 'success', icon: '↺' });
+  } catch (e) {
+    console.error(e);
+    showToast('Не удалось сбросить', { type: 'error' });
+  }
+});
+
+// Рендер списка
+function renderShoppingList() {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+
+  const list = c.shoppingList || [];
+
+  // Прогресс
+  const total = list.filter(i => !i.haveIt).length; // «есть дома» не считаем
+  const bought = list.filter(i => i.bought && !i.haveIt).length;
+  const percent = total === 0 ? 0 : Math.round((bought / total) * 100);
+  shoppingProgressFill.style.width = percent + '%';
+  shoppingProgressText.textContent = `Куплено ${bought} из ${total}`;
+  shoppingRemainText.textContent = total === 0 ? '' : `Осталось: ${total - bought}`;
+
+  shoppingSubtitle.textContent = `${list.length} ${list.length === 1 ? 'пункт' : list.length < 5 ? 'пункта' : 'пунктов'} в списке`;
+
+  // Пусто
+  if (list.length === 0) {
+    shoppingBody.innerHTML = `
+      <div class="shopping-empty">
+        <div class="es-icon">🛒</div>
+        <p>Список пуст.<br>Нажмите <b>«Собрать из рецептов»</b> — я соберу ингредиенты из всех рецептов этой подборки.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Разделяем на группы
+  const toBuy = list.filter(i => !i.haveIt && !i.bought);
+  const boughtItems = list.filter(i => !i.haveIt && i.bought);
+  const haveItems = list.filter(i => i.haveIt);
+
+  let html = '';
+
+  if (toBuy.length > 0) {
+    html += `<div class="shopping-section-title">Купить (${toBuy.length})</div>`;
+    toBuy.forEach(item => html += shoppingItemHtml(item));
+  }
+
+  if (boughtItems.length > 0) {
+    html += `<div class="shopping-section-title">Куплено (${boughtItems.length})</div>`;
+    boughtItems.forEach(item => html += shoppingItemHtml(item));
+  }
+
+  if (haveItems.length > 0) {
+    html += `<div class="shopping-section-title">Уже есть дома (${haveItems.length})</div>`;
+    haveItems.forEach(item => html += shoppingItemHtml(item));
+  }
+
+  // Ручное добавление
+  html += `
+    <div class="shopping-add-row">
+      <input id="newShoppingItem" placeholder="Добавить свой пункт…" maxlength="120">
+      <button id="addShoppingItemBtn">+</button>
+    </div>
+  `;
+
+  shoppingBody.innerHTML = html;
+
+  const addInput = document.getElementById('newShoppingItem');
+  const addBtn = document.getElementById('addShoppingItemBtn');
+  if (addBtn && addInput) {
+    const add = async () => {
+      const name = addInput.value.trim();
+      if (!name) return;
+      await addShoppingItem(name);
+      addInput.value = '';
+      addInput.focus();
+    };
+    addBtn.addEventListener('click', add);
+    addInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); add(); }
+    });
+  }
+}
+
+function shoppingItemHtml(item) {
+  const cls = item.bought ? 'bought' : item.haveIt ? 'have-it' : '';
+  const check = item.bought ? '✓' : item.haveIt ? '🏠' : '';
+  const haveLabel = item.haveIt ? '🏠' : '☆';
+  return `
+    <div class="shopping-item ${cls}" data-id="${item.id}">
+      <div class="shopping-checkbox">${check}</div>
+      <div class="shopping-name">${escapeHtml(item.name)}</div>
+      <button class="shopping-have-btn">${haveLabel}</button>
+      <button class="shopping-del-btn" title="Удалить">✕</button>
+    </div>
+  `;
+}
+
+// Переключить «куплено»
+async function toggleShoppingBought(itemId) {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+  const list = (c.shoppingList || []).map(item => {
+    if (item.id === itemId) {
+      return { ...item, bought: !item.bought, haveIt: false };
+    }
+    return item;
+  });
+  await setDoc(doc(db, 'collections', c.id), { shoppingList: list }, { merge: true });
+}
+
+// Переключить «уже есть дома»
+async function toggleShoppingHave(itemId) {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+  const list = (c.shoppingList || []).map(item => {
+    if (item.id === itemId) {
+      return { ...item, haveIt: !item.haveIt, bought: false };
+    }
+    return item;
+  });
+  await setDoc(doc(db, 'collections', c.id), { shoppingList: list }, { merge: true });
+}
+
+// Добавить свой пункт
+async function addShoppingItem(name) {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+  const list = [...(c.shoppingList || [])];
+  const key = name.toLowerCase().replace(/\s+/g, ' ');
+  if (list.some(i => i.name.toLowerCase().replace(/\s+/g, ' ') === key)) {
+    showToast('Уже есть в списке', { type: 'info' });
+    return;
+  }
+  list.push({ id: shoppingUid(), name, haveIt: false, bought: false, manual: true });
+  await setDoc(doc(db, 'collections', c.id), { shoppingList: list }, { merge: true });
+}
+
+// Удалить пункт
+async function removeShoppingItem(itemId) {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return;
+  const list = (c.shoppingList || []).filter(i => i.id !== itemId);
+  await setDoc(doc(db, 'collections', c.id), { shoppingList: list }, { merge: true });
+}
+// Формируем текст для шаринга
+function buildShoppingText() {
+  const c = allCollections.find(x => x.id === currentShoppingCollectionId);
+  if (!c) return '';
+  const list = c.shoppingList || [];
+
+  const toBuy = list.filter(i => !i.haveIt && !i.bought);
+  const bought = list.filter(i => !i.haveIt && i.bought);
+  const have = list.filter(i => i.haveIt);
+
+  let text = `🛒 Список покупок\n🎉 ${c.emoji || ''} ${c.name}\n\n`;
+
+  if (toBuy.length > 0) {
+    text += `Нужно купить:\n`;
+    toBuy.forEach(i => { text += `• ${i.name}\n`; });
+    text += '\n';
+  }
+  if (bought.length > 0) {
+    text += `Уже куплено:\n`;
+    bought.forEach(i => { text += `✅ ${i.name}\n`; });
+    text += '\n';
+  }
+  if (have.length > 0) {
+    text += `Уже есть дома:\n`;
+    have.forEach(i => { text += `🏠 ${i.name}\n`; });
+  }
+
+  return text.trim();
+}
+
+// Поделиться
+shoppingShareBtn.addEventListener('click', async () => {
+  const text = buildShoppingText();
+  if (!text) { showToast('Список пуст', { type: 'info' }); return; }
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Список покупок',
+        text
+      });
+    } catch (e) {
+      // Пользователь отменил — это не ошибка
+      if (e.name !== 'AbortError') {
+        console.warn('Share error:', e);
+      }
+    }
+  } else {
+    // Fallback — копирование
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Список скопирован', { type: 'success', icon: '📋', sub: 'Вставьте в любой мессенджер' });
+    } catch (e) {
+      // Резерв — старая копия через textarea
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Список скопирован', { type: 'success', icon: '📋' }); }
+      catch (err) { showToast('Не удалось скопировать', { type: 'error' }); }
+      ta.remove();
+    }
+  }
+});
+
+// Копировать
+shoppingCopyBtn.addEventListener('click', async () => {
+  const text = buildShoppingText();
+  if (!text) { showToast('Список пуст', { type: 'info' }); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Скопировано', { type: 'success', icon: '📋', sub: 'Вставьте в чат или заметки' });
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Скопировано', { type: 'success', icon: '📋' }); }
+    catch (err) { showToast('Не удалось скопировать', { type: 'error' }); }
+    ta.remove();
+  }
+});
 
 // --- Случайный рецепт ---
 randomBtn.addEventListener('click', () => {
@@ -1382,10 +1776,19 @@ console.error('Ошибка реалтайма (wishlist):', err);
 
 // ↓↓↓ ДОБАВЛЕНО ↓↓↓
 unsubCollections = onSnapshot(query(collectionsCol, orderBy('createdAt', 'desc')), (snap) => {
-allCollections = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-if (currentView === 'collections') renderCollections();
+  allCollections = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (currentView === 'collections') renderCollections();
+
+  // Авто-перерисовка открытого списка покупок
+  const shopModal = document.getElementById('shoppingModal');
+  if (shopModal && shopModal.classList.contains('show') &&
+      typeof renderShoppingList === 'function' &&
+      typeof currentShoppingCollectionId !== 'undefined' &&
+      currentShoppingCollectionId) {
+    renderShoppingList();
+  }
 }, (err) => {
-console.error('Ошибка реалтайма (collections):', err);
+  console.error('Ошибка реалтайма (collections):', err);
 });
 // ↑↑↑ ДОБАВЛЕНО ↑↑↑
 }
