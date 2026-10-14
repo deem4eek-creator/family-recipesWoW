@@ -1,5 +1,5 @@
 // Service Worker для «Семейных рецептов»
-const CACHE = 'recipes-v2';
+const CACHE = 'recipes-v6';
 const ASSETS = [
   './',
   './index.html',
