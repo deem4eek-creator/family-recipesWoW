@@ -205,6 +205,35 @@
     </div>
   </div>
 </div>
+<!-- Модалка списка покупок -->
+<div id="shoppingModal" class="shopping-modal-overlay">
+  <div class="shopping-box">
+    <div class="shopping-head">
+      <h3 id="shoppingTitle">🛒 Список покупок</h3>
+      <div class="shopping-sub" id="shoppingSubtitle"></div>
+      <button class="shopping-close" id="shoppingCloseBtn" title="Закрыть">✕</button>
+    </div>
+
+    <div class="shopping-progress">
+      <div class="shopping-progress-bar">
+        <div class="shopping-progress-fill" id="shoppingProgressFill"></div>
+      </div>
+      <div class="shopping-progress-text">
+        <span id="shoppingProgressText">Куплено 0 из 0</span>
+        <span id="shoppingRemainText"></span>
+      </div>
+    </div>
+
+    <div class="shopping-body" id="shoppingBody"></div>
+
+    <div class="shopping-actions">
+      <button class="sync-btn" id="shoppingSyncBtn">🔄 Собрать из рецептов</button>
+      <button class="share-btn" id="shoppingShareBtn">📤 Поделиться</button>
+      <button class="copy-btn" id="shoppingCopyBtn">📋 Копировать</button>
+      <button class="reset-btn" id="shoppingResetBtn">↺ Сбросить отметки</button>
+    </div>
+  </div>
+</div>
 <!-- РЕЖИМ ГОТОВКИ -->
 <div id="cookMode" class="cook-mode">
 <div class="cook-top">
@@ -290,6 +319,7 @@ navigator.serviceWorker.register('./sw.js')
 
 </body>
 </html>
+
 
 
 
