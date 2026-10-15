@@ -282,13 +282,15 @@ return '';
 }
 
 function ingredientsToHtml(raw) {
-if (!raw || !raw.trim()) return '';
-const items = raw
-.split(/[,\n]/)
-.map(s => s.trim())
-.filter(s => s.length > 0);
-if (items.length === 0) return '';
-return `<b>🥕 Ингредиенты:</b><ul class="ingredients-list">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
+  if (!raw || !raw.trim()) return '';
+  // Делим по переносу строки ИЛИ по запятой, за которой НЕ идёт цифра.
+  // Это защищает «0,5 кг» от разрезания на «0» и «5 кг».
+  const items = raw
+    .split(/\n|,(?!\d)/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  if (items.length === 0) return '';
+  return `<b>🥕 Ингредиенты:</b><ul class="ingredients-list">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
 }
 
 // --- Таймеры в шагах ---
@@ -466,7 +468,7 @@ function playSuccessSound() {
 // --- Умное заполнение формы ---
 function formatIngredients(raw) {
 return raw
-.split(/[,\n]+/)
+.split(/\n|,(?!\d)/)
 .map(s => s.trim().replace(/^[-•\d.)\s]+/, ''))
 .filter(s => s.length > 0)
 .map(s => s.charAt(0).toUpperCase() + s.slice(1))
@@ -498,7 +500,7 @@ function formatSteps(raw) {
 
   if (cleaned.length === 0) return raw;
 
-  // 4. Всегда нумеруем заново — от 1 до N
+ // 4. Всегда нумеруем заново — от 1 до N
   return cleaned
     .map((l, i) => `${i + 1}. ${l}`)
     .join('\n');
@@ -506,7 +508,7 @@ function formatSteps(raw) {
 
 function updateIngHint() {
   const items = ingredientsInput.value
-    .split(/[,\n]+/)
+    .split(/\n|,(?!\d)/)
     .map(s => s.trim())
     .filter(Boolean);
 
@@ -529,6 +531,7 @@ function updateIngHint() {
       (items.length > 8 ? `<span class="preview-more">+${items.length - 8} ещё</span>` : '');
   }
 }
+
 ingredientsInput.addEventListener('input', updateIngHint);
 
 ingredientsInput.addEventListener('blur', () => {
@@ -604,21 +607,45 @@ rec.interimResults = false;
 rec.maxAlternatives = 1;
 
 rec.onresult = (event) => {
-for (let i = event.resultIndex; i < event.results.length; i++) {
-if (event.results[i].isFinal) {
-let text = event.results[i][0].transcript.trim();
-if (!text) continue;
-text = text.charAt(0).toUpperCase() + text.slice(1);
-const current = textarea.value.trim();
-if (mode === 'ingredients') {
-textarea.value = current ? current + ',\n' + text : text;
-} else {
-textarea.value = current ? current + '\n' + text : text;
-}
-textarea.scrollTop = textarea.scrollHeight;
-if (mode === 'ingredients') updateIngHint();
-}
-}
+  for (let i = event.resultIndex; i < event.results.length; i++) {
+    if (event.results[i].isFinal) {
+      let text = event.results[i][0].transcript.trim();
+      if (!text) continue;
+
+      // ===== ШАГИ =====
+      if (mode === 'steps') {
+        // Заменяем слова-разделители на реальные знаки
+        text = text
+          .replace(/\bточка\b/gi, '.')
+          .replace(/\bточку\b/gi, '.')
+          .replace(/\bтчк\b/gi, '.')
+          .replace(/\bзапятая\b/gi, ',')
+          .replace(/\bзапятую\b/gi, ',');
+
+        // Разбиваем на предложения по точке/!/?
+        const sentences = text
+          .split(/[.!?]+\s*/)
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+
+        if (sentences.length > 0) {
+          const newLines = sentences
+            .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+            .join('\n');
+          const current = textarea.value.trim();
+          textarea.value = current ? current + '\n' + newLines : newLines;
+        }
+      } else {
+        // ===== ИНГРЕДИЕНТЫ =====
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+        const current = textarea.value.trim();
+        textarea.value = current ? current + ',\n' + text : text;
+        updateIngHint();
+      }
+
+      textarea.scrollTop = textarea.scrollHeight;
+    }
+  }
 };
 
 rec.onerror = (event) => {
@@ -1301,8 +1328,18 @@ shoppingBody.addEventListener('click', async (e) => {
   await toggleShoppingBought(id);
 });
 // Собираем ингредиенты из всех рецептов подборки
+// Нормализация ключа ингредиента для дедупликации
+function normalizeIngredientKey(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[.,;:!?»«"'()]+/g, '')   // убираем все знаки
+    .replace(/\s+/g, ' ')                // сжимаем пробелы
+    .trim();
+}
+
 function collectIngredientsFromCollection(collection) {
-  const ids = collection.recipeIds || [];
+  // Дедупликация id рецептов — на случай, если рецепт в recipeIds дважды
+  const ids = [...new Set(collection.recipeIds || [])];
   const seen = new Set();
   const result = [];
 
@@ -1311,12 +1348,12 @@ function collectIngredientsFromCollection(collection) {
     if (!r || !r.ingredientsShort) return;
 
     r.ingredientsShort
-      .split(/[,\n]+/)
+      .split(/\n|,(?!\d)/)
       .map(s => s.trim())
       .filter(s => s.length > 0)
       .forEach(ing => {
-        const key = ing.toLowerCase().replace(/\s+/g, ' ');
-        if (seen.has(key)) return;
+        const key = normalizeIngredientKey(ing);
+        if (!key || seen.has(key)) return;
         seen.add(key);
         result.push(ing);
       });
@@ -1332,15 +1369,15 @@ shoppingSyncBtn.addEventListener('click', async () => {
 
   const fromRecipes = collectIngredientsFromCollection(c);
   const existing = c.shoppingList || [];
-  const existingMap = new Map();
-  existing.forEach(item => {
-    existingMap.set(item.name.toLowerCase().replace(/\s+/g, ' '), item);
-  });
+ const existingMap = new Map();
+existing.forEach(item => {
+  existingMap.set(normalizeIngredientKey(item.name), item);
+});
 
   const newList = [];
   // Сначала все существующие — сохраняем отметки
   fromRecipes.forEach(name => {
-    const key = name.toLowerCase().replace(/\s+/g, ' ');
+  const key = normalizeIngredientKey(name);
     const old = existingMap.get(key);
     if (old) {
       newList.push(old); // сохраняем haveIt/bought
@@ -1357,10 +1394,10 @@ shoppingSyncBtn.addEventListener('click', async () => {
 
   // Оставляем ручные пункты, которые не пересеклись
   existing.forEach(item => {
-    if (item.manual && !fromRecipes.some(n => n.toLowerCase() === item.name.toLowerCase())) {
-      newList.push(item);
-    }
-  });
+  if (item.manual && !fromRecipes.some(n => normalizeIngredientKey(n) === normalizeIngredientKey(item.name))) {
+    newList.push(item);
+  }
+});
 
   try {
     await setDoc(doc(db, 'collections', c.id), { shoppingList: newList }, { merge: true });
@@ -1513,8 +1550,8 @@ async function addShoppingItem(name) {
   const c = allCollections.find(x => x.id === currentShoppingCollectionId);
   if (!c) return;
   const list = [...(c.shoppingList || [])];
-  const key = name.toLowerCase().replace(/\s+/g, ' ');
-  if (list.some(i => i.name.toLowerCase().replace(/\s+/g, ' ') === key)) {
+  const key = normalizeIngredientKey(name);
+if (list.some(i => normalizeIngredientKey(i.name) === key)) {
     showToast('Уже есть в списке', { type: 'info' });
     return;
   }
