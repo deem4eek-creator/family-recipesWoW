@@ -118,6 +118,7 @@
 <div class="dictation-hint" id="dictStepsHint"></div>
 <div id="stepsPreview" class="field-preview"></div>
 <input id="recipeLink" placeholder="Ссылка на источник (если есть)">
+<textarea id="recipeFamilyNote" placeholder="Семейный комментарий (необязательно): «Бабушкин рецепт», «Папа любит посолонее», «Готовим только на Новый год»…" rows="2"></textarea>
 <input type="file" id="recipeImage" accept="image/*" multiple>
 <small style="display:block; margin-bottom:8px; color:#777;">Можно выбрать до 4 фото: первое станет главным, остальные — подсказками к шагам.</small>
 <button id="addRecipeBtn">Добавить рецепт</button>
@@ -150,9 +151,10 @@
 <input id="portTo" type="number" min="1" placeholder="2" title="Сколько нужно">
 <button id="scaleBtn">Пересчитать</button>
 </div>
-
+<div id="modalFamilyNote"></div>
 <div id="modalIngredients" style="margin:12px 0;"></div>
 <div id="modalSteps" style="margin:16px 0;"></div>
+<div id="modalCookedBy"></div>
 <div class="meta" id="modalMeta"></div>
 <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
 
