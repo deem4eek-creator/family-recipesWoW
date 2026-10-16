@@ -76,6 +76,7 @@ const dictIngredientsHint = document.getElementById('dictIngredientsHint');
 const stepsInput = document.getElementById('recipeSteps');
 const dictStepsHint = document.getElementById('dictStepsHint');
 const linkInput = document.getElementById('recipeLink');
+const familyNoteInput = document.getElementById('recipeFamilyNote');
 const imageInput = document.getElementById('recipeImage');
 const addRecipeBtn = document.getElementById('addRecipeBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -103,6 +104,8 @@ const modalImage = document.getElementById('modalImage');
 const modalGallery = document.getElementById('modalGallery');
 const modalIngredients = document.getElementById('modalIngredients');
 const modalSteps = document.getElementById('modalSteps');
+const modalFamilyNote = document.getElementById('modalFamilyNote');
+const modalCookedBy = document.getElementById('modalCookedBy');
 const modalMeta = document.getElementById('modalMeta');
 const doneBtn = document.getElementById('doneBtn');
 const editFromModalBtn = document.getElementById('editFromModalBtn');
@@ -200,7 +203,14 @@ function showToast(message, options = {}) {
     setTimeout(() => toast.remove(), 320);
   }, duration);
 }
-
+function askCookedBy() {
+  const saved = localStorage.getItem('lastCookedBy') || '';
+  const who = prompt('Кто приготовил? (имя)', saved);
+  if (!who || !who.trim()) return null;
+  const name = who.trim();
+  localStorage.setItem('lastCookedBy', name);
+  return name;
+}
 // ===== RIPPLE-ЭФФЕКТ =====
 function attachRipple(el) {
   el.addEventListener('click', function (e) {
@@ -1968,13 +1978,17 @@ const stripHtml = images.length > 1
 
 card.innerHTML = `
 <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
-<h3>${escapeHtml(r.title)} ${badges.join(' ')}</h3>
+<h3>${escapeHtml(r.title)} ${badges.join(' ')}${r.cookedBy ? `<span class="cooked-by-badge">👨‍🍳 ${escapeHtml(r.cookedBy)}</span>` : ''}</h3>
 ${ratingHtml}
 ${mainImg}
 ${stripHtml}
 ${ingredientsToHtml(r.ingredientsShort)}
 <div class="meta">${r.link ? `<a href="${escapeHtml(r.link)}" target="_blank">Источник</a>` : ''}</div>
-<p>${escapeHtml(r.steps).replace(/\n/g, '<br>')}</p>
+${r.steps ? `
+  <div class="card-steps-preview" data-preview-id="${r.id}">${escapeHtml(r.steps).replace(/\n/g, '<br>')}</div>
+  <button class="toggle-steps-btn" data-toggle-id="${r.id}">Показать все шаги ↓</button>
+` : ''}
+${r.familyNote ? `<div class="family-note-card">${escapeHtml(r.familyNote)}</div>` : ''}
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
 ${isRecipes ? `<button class="icon-btn favCardBtn" data-id="${r.id}" title="Избранное">${r.favorite ? '⭐' : '☆'}</button>` : ''}
 ${isRecipes ? `<button class="icon-btn cookedCardBtn" data-id="${r.id}" title="Уже приготовили">${r.cooked ? '✓' : '☐'}</button>` : ''}
@@ -2050,6 +2064,17 @@ document.querySelectorAll('.addToCollectionBtn').forEach(btn => {
     openPickCollectionModal(btn.getAttribute('data-id'));
   });
 });
+// Кнопка «Показать все шаги»
+document.querySelectorAll('.toggle-steps-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = btn.getAttribute('data-toggle-id');
+    const preview = document.querySelector(`.card-steps-preview[data-preview-id="${id}"]`);
+    if (!preview) return;
+    const expanded = preview.classList.toggle('expanded');
+    btn.textContent = expanded ? 'Свернуть ↑' : 'Показать все шаги ↓';
+  });
+});
 }
 
 categoryFilter.addEventListener('change', () => {
@@ -2075,17 +2100,28 @@ showToast('Не удалось обновить избранное', { type: 'er
 }
 
 async function toggleCooked(id) {
-const r = allRecipes.find(x => x.id === id);
-if (!r) return;
-try {
-await setDoc(doc(db, 'recipes', id), {
-cooked: !r.cooked,
-cookedAt: !r.cooked ? new Date() : null
-}, { merge: true });
-} catch (e) {
-console.error(e);
-showToast('Не удалось обновить отметку', { type: 'error' });
-}
+  const r = allRecipes.find(x => x.id === id);
+  if (!r) return;
+  try {
+    if (!r.cooked) {
+      const who = askCookedBy();
+      if (who === null) return;
+      await setDoc(doc(db, 'recipes', id), {
+        cooked: true,
+        cookedAt: new Date(),
+        cookedBy: who
+      }, { merge: true });
+    } else {
+      await setDoc(doc(db, 'recipes', id), {
+        cooked: false,
+        cookedAt: null,
+        cookedBy: ''
+      }, { merge: true });
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Не удалось обновить отметку', { type: 'error' });
+  }
 }
 
 // --- Редактирование ---
@@ -2110,6 +2146,7 @@ categoryInput.value = r.category || '';
 ingredientsInput.value = r.ingredientsShort || '';
 stepsInput.value = formatSteps(r.steps || '');
 linkInput.value = r.link || '';
+familyNoteInput.value = r.familyNote || '';
 imageInput.value = '';
 updateIngHint();
 
@@ -2133,6 +2170,7 @@ categoryInput.selectedIndex = 0;
 ingredientsInput.value = '';
 stepsInput.value = '';
 linkInput.value = '';
+familyNoteInput.value = '';
 imageInput.value = '';
 updateIngHint();
 
@@ -2153,6 +2191,7 @@ const category = categoryInput.value;
 const ingredientsShort = formatIngredients(ingredientsInput.value);
 const steps = formatSteps(stepsInput.value);
 const link = linkInput.value.trim();
+const familyNote = familyNoteInput.value.trim();
 
 if (!title || !category || !steps) {
 	showToast('Заполните название, категорию и шаги', { type: 'warn' });
@@ -2177,7 +2216,7 @@ addRecipeBtn.textContent = 'Сохраняем…';
 
 if (editingId) {
 const docRef = doc(db, editingCollection, editingId);
-const updates = { title, category, ingredientsShort, steps, link };
+const updates = { title, category, ingredientsShort, steps, link, familyNote };
 if (newImages !== null && newImages.length > 0) {
 updates.imagesBase64 = newImages;
 updates.imageBase64 = newImages[0] || '';
@@ -2190,11 +2229,11 @@ cancelEdit();
 } else {
 const targetCol = currentView === 'wishlist' ? wishlistCol : recipesCol;
 await addDoc(targetCol, {
-title, category, ingredientsShort, steps, link,
-imageBase64: (newImages && newImages[0]) || '',
-imagesBase64: newImages || [],
-favorite: false, cooked: false,
-createdAt: new Date(), reviews: []
+  title, category, ingredientsShort, steps, link, familyNote,
+  imageBase64: (newImages && newImages[0]) || '',
+  imagesBase64: newImages || [],
+  favorite: false, cooked: false,
+  createdAt: new Date(), reviews: []
 });
 cancelEdit();
 }
@@ -2251,6 +2290,31 @@ modalGallery.appendChild(thumb);
 modalIngredients.innerHTML = ingredientsToHtml(r.ingredientsShort) || '';
 portTo.value = '';
 modalSteps.innerHTML = renderStepsHtml(r.steps);
+// Семейный комментарий
+if (r.familyNote) {
+  modalFamilyNote.innerHTML = `
+    <div class="family-note-full">
+      <span class="fn-label">💬 Семейный комментарий</span>
+      <span class="fn-text">${escapeHtml(r.familyNote)}</span>
+    </div>
+  `;
+} else {
+  modalFamilyNote.innerHTML = '';
+}
+
+// Кто готовил
+if (r.cookedBy) {
+  const dateStr = r.cookedAt
+    ? new Date(r.cookedAt.seconds ? r.cookedAt.seconds * 1000 : r.cookedAt).toLocaleDateString('ru-RU')
+    : '';
+  modalCookedBy.innerHTML = `
+    <div style="margin:10px 0; font-size:0.9em; color:#7a4a1f;">
+      <b>👨‍🍳 Готовил(а):</b> ${escapeHtml(r.cookedBy)}${dateStr ? ` · <span style="color:#888;">${dateStr}</span>` : ''}
+    </div>
+  `;
+} else {
+  modalCookedBy.innerHTML = '';
+}
 modalMeta.textContent = r.link ? `Источник: ${escapeHtml(r.link)}` : '';
 
 doneBtn.style.display = currentCollection === 'wishlist' ? 'block' : 'none';
@@ -2321,17 +2385,17 @@ favModalBtn.classList.toggle('fav-active', !r.favorite);
 });
 
 cookedModalBtn.addEventListener('click', async () => {
-if (!currentRecipeId || currentCollection !== 'recipes') return;
-const r = allRecipes.find(x => x.id === currentRecipeId);
-if (!r) return;
-const turningOn = !r.cooked;
-await toggleCooked(currentRecipeId);
-cookedModalBtn.textContent = !r.cooked ? '✓' : '☐';
-cookedModalBtn.classList.toggle('cooked-active', !r.cooked);
-if (turningOn) {
-const rect = cookedModalBtn.getBoundingClientRect();
-launchConfetti(rect.left + rect.width / 2, rect.top);
-}
+  if (!currentRecipeId || currentCollection !== 'recipes') return;
+  const r = allRecipes.find(x => x.id === currentRecipeId);
+  if (!r) return;
+  const turningOn = !r.cooked;
+  await toggleCooked(currentRecipeId);
+  if (turningOn) {
+    const rect = cookedModalBtn.getBoundingClientRect();
+    launchConfetti(rect.left + rect.width / 2, rect.top);
+  }
+  // Перерисовываем модалку — обновляется плашка «кто готовил»
+  openRecipe(currentRecipeId);
 });
 
 // --- Рейтинг ---
