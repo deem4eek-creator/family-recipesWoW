@@ -1229,3 +1229,135 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
 .shopping-item .shopping-del-btn {
   flex-shrink: 0 !important;
 }
+/* ===== КОМПАКТНЫЕ КАРТОЧКИ РЕЦЕПТОВ ===== */
+
+/* Уменьшаем главное фото */
+.card .polaroid {
+  padding: 6px 6px 22px;
+  margin: 10px auto 6px;
+}
+.card .polaroid img {
+  max-height: 180px;
+  object-fit: cover;
+  width: 100%;
+}
+.card .polaroid-caption {
+  font-size: 0.72em;
+  margin-top: 5px;
+}
+
+/* Мини-галерея дополнительных фото — компактнее */
+.card .photo-strip {
+  gap: 5px;
+  margin-top: 6px;
+}
+.card .photo-strip img {
+  width: 62px;
+  height: 62px;
+  border-radius: 6px;
+}
+
+/* Превью шагов — 3 строки по умолчанию */
+.card-steps-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #444;
+  line-height: 1.4;
+  margin: 6px 0 2px;
+  font-size: 0.92em;
+}
+.card-steps-preview.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+}
+.toggle-steps-btn {
+  background: transparent;
+  color: #4a90e2;
+  border: none;
+  padding: 4px 0;
+  margin: 0 0 6px;
+  min-height: 0;
+  font-size: 0.85em;
+  font-weight: 700;
+  cursor: pointer;
+  width: auto;
+  text-align: left;
+  display: inline-block;
+}
+.toggle-steps-btn:hover {
+  background: transparent;
+  color: #357abd;
+  text-decoration: underline;
+}
+
+/* Ингредиенты в карточке — компактнее */
+.card .ingredients-list {
+  font-size: 0.88em;
+  padding: 6px 6px 6px 22px;
+  margin-top: 4px;
+}
+.card .ingredients-list li {
+  margin-bottom: 1px;
+}
+
+/* Плашка «Кто готовил» */
+.cooked-by-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: #fff4e6;
+  border: 1px solid #f39c12;
+  color: #7a4a1f;
+  font-size: 0.75em;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Семейный комментарий в карточке */
+.family-note-card {
+  background: #fff8e7;
+  border-left: 4px solid #f39c12;
+  padding: 7px 11px;
+  border-radius: 6px;
+  margin: 8px 0 4px;
+  font-style: italic;
+  color: #7a4a1f;
+  font-size: 0.88em;
+  line-height: 1.35;
+  position: relative;
+}
+.family-note-card::before {
+  content: '💬';
+  margin-right: 6px;
+  font-style: normal;
+}
+
+/* Семейный комментарий в модалке */
+.family-note-full {
+  background: #fff8e7;
+  border-left: 5px solid #f39c12;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin: 14px 0;
+  color: #5a3a10;
+  font-size: 1em;
+  line-height: 1.5;
+}
+.family-note-full .fn-label {
+  display: block;
+  font-weight: 700;
+  color: #7a4a1f;
+  margin-bottom: 6px;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.family-note-full .fn-text { font-style: italic; }
