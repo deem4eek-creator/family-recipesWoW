@@ -1365,39 +1365,45 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
 .card-ing-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
   margin: 8px 0 6px;
-  max-height: 58px;         /* ~2 строки чипсов */
+  max-height: 58px;
   overflow: hidden;
 }
 .card-ing-chip {
   display: inline-block;
-  background: rgba(240,248,245,0.9);
-  border: 1px solid #d4e5d9;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
   padding: 3px 9px;
   font-size: 0.78em;
-  color: #2c7a4b;
+  color: #444;
+  font-weight: 500;
   white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.3;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 .card-ing-more {
   display: inline-block;
   padding: 3px 9px;
   font-size: 0.78em;
-  color: #7a4a1f;
-  background: #fff3c4;
-  border: 1px solid #f39c12;
+  color: #fff;
+  background: #e67e22;
+  border: 1px solid #d35400;
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   line-height: 1.3;
-  transition: background 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: background 0.15s ease, transform 0.1s ease;
 }
-.card-ing-more:hover { background: #ffe9a8; }
+.card-ing-more:hover {
+  background: #d35400;
+  transform: scale(1.03);
+}
 
 /* Ещё уменьшаем шаги в карточке — 2 строки вместо 3 */
 .card-steps-preview {
