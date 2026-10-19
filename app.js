@@ -302,7 +302,28 @@ function ingredientsToHtml(raw) {
   if (items.length === 0) return '';
   return `<b>🥕 Ингредиенты:</b><ul class="ingredients-list">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
 }
+// Компактные чипсы-ингредиенты для карточки
+function compactIngredientsHtml(raw) {
+  if (!raw || !raw.trim()) return '';
+  const items = raw
+    .split(/\n|,(?!\d)/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  if (items.length === 0) return '';
 
+  const visible = items.slice(0, 4);
+  const rest = items.length - visible.length;
+
+  const chips = visible
+    .map(i => `<span class="card-ing-chip">${escapeHtml(i)}</span>`)
+    .join('');
+
+  const more = rest > 0
+    ? `<span class="card-ing-more" title="Показать все ингредиенты">+${rest} ещё</span>`
+    : '';
+
+  return `<div class="card-ing-chips">${chips}${more}</div>`;
+}
 // --- Таймеры в шагах ---
 function parseTime(text) {
 const m = text.match(/(\d+)\s*(мин|минут[аы]?|сек|секунд[аы]?|час[аов]?|ч\b)/i);
@@ -1107,7 +1128,7 @@ document.getElementById('openShoppingBtn').addEventListener('click', () => {
       <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
       <h3>${escapeHtml(r.title)}</h3>
       ${mainImg}
-      ${ingredientsToHtml(r.ingredientsShort)}
+      ${compactIngredientsHtml(r.ingredientsShort)}
       ${cookedInfo ? `<div style="margin-top:6px;">${cookedInfo}</div>` : ''}
       <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
         <button class="done-btn cookedHereBtn" style="flex:1;">🍳 Приготовил</button>
@@ -2076,6 +2097,17 @@ document.querySelectorAll('.toggle-steps-btn').forEach(btn => {
   });
 });
 }
+// Клик по «+N ещё» — открывает модалку рецепта с полным списком
+document.querySelectorAll('.card-ing-more').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const card = el.closest('.card');
+    if (!card) return;
+    // Находим id через любую кнопку с data-id внутри карточки
+    const btn = card.querySelector('[data-id]');
+    if (btn) openRecipe(btn.getAttribute('data-id'));
+  });
+});
 
 categoryFilter.addEventListener('change', () => {
 applyBackground();
