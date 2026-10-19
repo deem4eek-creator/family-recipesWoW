@@ -2003,7 +2003,7 @@ card.innerHTML = `
 ${ratingHtml}
 ${mainImg}
 ${stripHtml}
-${ingredientsToHtml(r.ingredientsShort)}
+${compactIngredientsHtml(r.ingredientsShort)}
 <div class="meta">${r.link ? `<a href="${escapeHtml(r.link)}" target="_blank">Источник</a>` : ''}</div>
 ${r.steps ? `
   <div class="card-steps-preview" data-preview-id="${r.id}">${escapeHtml(r.steps).replace(/\n/g, '<br>')}</div>
@@ -2096,7 +2096,7 @@ document.querySelectorAll('.toggle-steps-btn').forEach(btn => {
     btn.textContent = expanded ? 'Свернуть ↑' : 'Показать все шаги ↓';
   });
 });
-}
+
 // Клик по «+N ещё» — открывает модалку рецепта с полным списком
 document.querySelectorAll('.card-ing-more').forEach(el => {
   el.addEventListener('click', (e) => {
@@ -2108,7 +2108,7 @@ document.querySelectorAll('.card-ing-more').forEach(el => {
     if (btn) openRecipe(btn.getAttribute('data-id'));
   });
 });
-
+}
 categoryFilter.addEventListener('change', () => {
 applyBackground();
 renderList();
