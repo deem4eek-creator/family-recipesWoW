@@ -1361,3 +1361,46 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
   letter-spacing: 0.05em;
 }
 .family-note-full .fn-text { font-style: italic; }
+/* ===== КОМПАКТНЫЕ ИНГРЕДИЕНТЫ В КАРТОЧКЕ ===== */
+.card-ing-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 6px;
+  max-height: 58px;         /* ~2 строки чипсов */
+  overflow: hidden;
+}
+.card-ing-chip {
+  display: inline-block;
+  background: rgba(240,248,245,0.9);
+  border: 1px solid #d4e5d9;
+  border-radius: 10px;
+  padding: 3px 9px;
+  font-size: 0.78em;
+  color: #2c7a4b;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.card-ing-more {
+  display: inline-block;
+  padding: 3px 9px;
+  font-size: 0.78em;
+  color: #7a4a1f;
+  background: #fff3c4;
+  border: 1px solid #f39c12;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.3;
+  transition: background 0.15s ease;
+}
+.card-ing-more:hover { background: #ffe9a8; }
+
+/* Ещё уменьшаем шаги в карточке — 2 строки вместо 3 */
+.card-steps-preview {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
