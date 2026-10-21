@@ -54,6 +54,7 @@
 
 <div class="header-actions-row">
 <button id="randomBtn" class="ghost-btn" title="Покажет случайный рецепт">🎲 Что сегодня?</button>
+<button id="kitchenHelperBtn" class="ghost-btn" title="Меры и замены ингредиентов">🍳 Кухонные подсказки</button>
 <button id="fontBtn" class="ghost-btn" title="Крупный шрифт для чтения без очков">📖 Крупный шрифт</button>
 <button id="logoutBtn" class="logout-btn">Выйти</button>
 </div>
@@ -119,6 +120,30 @@
 <div id="stepsPreview" class="field-preview"></div>
 <input id="recipeLink" placeholder="Ссылка на источник (если есть)">
 <textarea id="recipeFamilyNote" placeholder="Семейный комментарий (необязательно): «Бабушкин рецепт», «Папа любит посолонее», «Готовим только на Новый год»…" rows="2"></textarea>
+<!-- История рецепта -->
+<div class="form-section">
+  <h4 class="form-section-title">📜 История рецепта</h4>
+  <textarea id="recipeStory" placeholder="Откуда рецепт? «Бабушка Люба пекла каждое воскресенье», «Из книги 1978 года», «Привезли из Италии»…" rows="2"></textarea>
+</div>
+
+<!-- Повод / праздник -->
+<div class="form-section">
+  <h4 class="form-section-title">🎂 Когда готовим</h4>
+  <div class="occasion-row">
+    <input id="recipeOccasion" placeholder="Повод: «День рождения папы», «Новый год»…">
+    <input id="recipeOccasionDate" type="date" title="Дата (для напоминаний)">
+  </div>
+  <div class="occasion-row full">
+    <select id="recipeOccasionDays" title="За сколько дней напомнить">
+      <option value="0">Без напоминания</option>
+      <option value="1">Напомнить за 1 день</option>
+      <option value="3" selected>Напомнить за 3 дня</option>
+      <option value="7">Напомнить за неделю</option>
+      <option value="14">Напомнить за 2 недели</option>
+    </select>
+  </div>
+  <small>Если указать дату и выбрать «Напомнить», приложение покажет напоминание в нужный день.</small>
+</div>
 <input type="file" id="recipeImage" accept="image/*" multiple>
 <small style="display:block; margin-bottom:8px; color:#777;">Можно выбрать до 4 фото: первое станет главным, остальные — подсказками к шагам.</small>
 <button id="addRecipeBtn">Добавить рецепт</button>
@@ -151,6 +176,8 @@
 <input id="portTo" type="number" min="1" placeholder="2" title="Сколько нужно">
 <button id="scaleBtn">Пересчитать</button>
 </div>
+<div id="modalStory"></div>
+<div id="modalOccasion"></div>
 <div id="modalFamilyNote"></div>
 <div id="modalIngredients" style="margin:12px 0;"></div>
 <div id="modalSteps" style="margin:16px 0;"></div>
@@ -234,6 +261,36 @@
       <button class="copy-btn" id="shoppingCopyBtn">📋 Копировать</button>
       <button class="reset-btn" id="shoppingResetBtn">↺ Сбросить отметки</button>
     </div>
+  </div>
+</div>
+<!-- Модалка кухонных подсказок -->
+<div id="kitchenHelperModal" class="shopping-modal-overlay">
+  <div class="shopping-box" style="max-width: 560px;">
+    <div class="shopping-head">
+      <h3>🍳 Кухонные подсказки</h3>
+      <div class="shopping-sub">Меры, весы и замены ингредиентов</div>
+      <button class="shopping-close" id="kitchenHelperCloseBtn" title="Закрыть">✕</button>
+    </div>
+
+    <div class="helper-tabs">
+      <button class="helper-tab active" data-tab="measures">⚖️ Меры и весы</button>
+      <button class="helper-tab" data-tab="substitutes">🔄 Замены</button>
+    </div>
+
+    <div class="helper-body" id="helperBody"></div>
+  </div>
+</div>
+
+<!-- Модалка случайного рецепта -->
+<div id="randomPickerModal" class="modal-overlay">
+  <div class="modal-box" style="max-width: 380px;">
+    <h3 style="text-align:center;">🎲 Что сегодня?</h3>
+    <div id="randomRoller" class="random-roller">🎲</div>
+    <div id="randomResultActions" class="random-actions">
+      <button id="randomOpenBtn" class="done-btn">Открыть рецепт</button>
+      <button id="randomAgainBtn" class="ghost-btn" style="color:#333;">🎲 Ещё раз</button>
+    </div>
+    <button id="randomCancelBtn" class="ghost-btn" style="color:#333; margin-top:8px;">Отмена</button>
   </div>
 </div>
 <!-- РЕЖИМ ГОТОВКИ -->
