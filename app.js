@@ -77,6 +77,10 @@ const stepsInput = document.getElementById('recipeSteps');
 const dictStepsHint = document.getElementById('dictStepsHint');
 const linkInput = document.getElementById('recipeLink');
 const familyNoteInput = document.getElementById('recipeFamilyNote');
+const storyInput = document.getElementById('recipeStory');
+const occasionInput = document.getElementById('recipeOccasion');
+const occasionDateInput = document.getElementById('recipeOccasionDate');
+const occasionDaysInput = document.getElementById('recipeOccasionDays');
 const imageInput = document.getElementById('recipeImage');
 const addRecipeBtn = document.getElementById('addRecipeBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -105,6 +109,8 @@ const modalGallery = document.getElementById('modalGallery');
 const modalIngredients = document.getElementById('modalIngredients');
 const modalSteps = document.getElementById('modalSteps');
 const modalFamilyNote = document.getElementById('modalFamilyNote');
+const modalStory = document.getElementById('modalStory');
+const modalOccasion = document.getElementById('modalOccasion');
 const modalCookedBy = document.getElementById('modalCookedBy');
 const modalMeta = document.getElementById('modalMeta');
 const doneBtn = document.getElementById('doneBtn');
@@ -1680,15 +1686,219 @@ shoppingCopyBtn.addEventListener('click', async () => {
   }
 });
 
-// --- Случайный рецепт ---
-randomBtn.addEventListener('click', () => {
-const pool = currentView === 'recipes' ? allRecipes : allWishlist;
-if (pool.length === 0) {
-showToast('Нет рецептов', { type: 'info', icon: '🎲', sub: 'Добавьте хотя бы один рецепт' });
-return;
+// ===== КУХОННЫЕ ПОДСКАЗКИ =====
+const KITCHEN_MEASURES = [
+  { group: '🥄 Ложки', items: [
+    { key: '1 чайная ложка', val: '5 мл' },
+    { key: '1 десертная ложка', val: '10 мл' },
+    { key: '1 столовая ложка', val: '15 мл' }
+  ]},
+  { group: '🥛 Жидкости', items: [
+    { key: '1 чашка (US)', val: '240 мл' },
+    { key: '1 чашка (metric)', val: '250 мл' },
+    { key: '1 стакан (гранёный)', val: '200 мл' },
+    { key: '1 стакан (полный)', val: '250 мл' }
+  ]},
+  { group: '⚖️ Вес в ложках (без горки)', items: [
+    { key: 'Сахар — 1 ст.л.', val: '~25 г' },
+    { key: 'Сахар — 1 ч.л.', val: '~8 г' },
+    { key: 'Соль — 1 ст.л.', val: '~30 г' },
+    { key: 'Соль — 1 ч.л.', val: '~10 г' },
+    { key: 'Мука — 1 ст.л.', val: '~10 г' },
+    { key: 'Мука — 1 стакан (200мл)', val: '~130 г' },
+    { key: 'Масло сливочное — 1 ст.л.', val: '~15 г' },
+    { key: 'Мёд — 1 ст.л.', val: '~30 г' },
+    { key: 'Какао — 1 ст.л.', val: '~10 г' },
+    { key: 'Рис — 1 стакан', val: '~180 г' },
+    { key: 'Гречка — 1 стакан', val: '~165 г' },
+    { key: 'Манка — 1 ст.л.', val: '~20 г' }
+  ]},
+  { group: '🌡️ Температуры духовки', items: [
+    { key: '160°C', val: '~320°F' },
+    { key: '180°C', val: '~356°F' },
+    { key: '200°C', val: '~392°F' },
+    { key: '220°C', val: '~428°F' }
+  ]}
+];
+
+const KITCHEN_SUBSTITUTES = [
+  { group: '🥛 Молочные', items: [
+    { key: 'Сливки 33% (1 стакан)', val: 'молоко 3/4 ст. + масло слив. 1/4 ст.' },
+    { key: 'Сметана (1 стакан)', val: 'йогурт натуральный 1:1' },
+    { key: 'Молоко (1 стакан)', val: 'вода + сухое молоко / кефир 1:1' },
+    { key: 'Сливочное масло (100г)', val: 'растительное масло 80г' }
+  ]},
+  { group: '🥚 Яйца и связующие', items: [
+    { key: '1 яйцо (в выпечке)', val: '1/2 банана / 3 ст.л. льняного геля' },
+    { key: 'Яйцо (для смазывания)', val: 'молоко или вода' },
+    { key: 'Разрыхлитель (1 ч.л.)', val: 'сода 1/4 ч.л. + уксус' },
+    { key: 'Желатин (10г)', val: 'агар-агар 4г' }
+  ]},
+  { group: '🍬 Сахар и сладости', items: [
+    { key: 'Сахар (1 стакан)', val: 'мёд 3/4 стакана' },
+    { key: 'Сахарная пудра', val: 'сахар, перемолотый в блендере' },
+    { key: 'Шоколад тёмный (100г)', val: 'какао 3 ст.л. + масло 1 ст.л.' }
+  ]},
+  { group: '🌶️ Специи и приправы', items: [
+    { key: 'Соевый соус', val: 'соль + сахар + вода' },
+    { key: 'Уксус столовый', val: 'лимонный сок 1:1' },
+    { key: 'Лимонный сок', val: 'уксус яблочный 1:1' },
+    { key: 'Свежие травы', val: 'сушёные (1:3 по количеству)' }
+  ]},
+  { group: '🌾 Мука и крупы', items: [
+    { key: 'Пшеничная мука (1 стакан)', val: 'овсяная / рисовая 1:1' },
+    { key: 'Кукурузный крахмал (1 ст.л.)', val: 'мука 2 ст.л.' },
+    { key: 'Манка (для панировки)', val: 'сухари панировочные' }
+  ]}
+];
+
+const kitchenHelperModal = document.getElementById('kitchenHelperModal');
+const kitchenHelperCloseBtn = document.getElementById('kitchenHelperCloseBtn');
+const helperBody = document.getElementById('helperBody');
+const helperTabs = document.querySelectorAll('.helper-tab');
+
+function openKitchenHelper(tab = 'measures') {
+  kitchenHelperModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderHelper(tab);
 }
-openRecipe(pool[Math.floor(Math.random() * pool.length)].id);
+
+function renderHelper(tab) {
+  helperTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+
+  const data = tab === 'measures' ? KITCHEN_MEASURES : KITCHEN_SUBSTITUTES;
+  const placeholder = tab === 'measures' ? 'Найти меру…' : 'Чем заменить…';
+
+  let html = `<input class="helper-search" id="helperSearch" placeholder="${placeholder}">`;
+  html += `<div id="helperList">`;
+
+  data.forEach(group => {
+    html += `<div class="helper-section-title" data-group>${group.group}</div>`;
+    html += `<div class="helper-list">`;
+    group.items.forEach(item => {
+      html += `<div class="helper-item">
+        <span class="hi-key">${escapeHtml(item.key)}</span>
+        <span class="hi-val">${escapeHtml(item.val)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  helperBody.innerHTML = html;
+
+  const search = document.getElementById('helperSearch');
+  search.addEventListener('input', () => {
+    const term = search.value.toLowerCase().trim();
+    helperBody.querySelectorAll('.helper-item').forEach(el => {
+      const text = el.textContent.toLowerCase();
+      el.style.display = (text.includes(term) || !term) ? 'flex' : 'none';
+    });
+  });
+}
+
+kitchenHelperCloseBtn.addEventListener('click', () => {
+  kitchenHelperModal.classList.remove('show');
+  document.body.style.overflow = '';
 });
+
+kitchenHelperModal.addEventListener('click', (e) => {
+  if (e.target === kitchenHelperModal) {
+    kitchenHelperModal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+});
+
+helperTabs.forEach(t => {
+  t.addEventListener('click', () => renderHelper(t.dataset.tab));
+});
+
+document.getElementById('kitchenHelperBtn').addEventListener('click', () => openKitchenHelper('measures'));
+
+// ===== СЛУЧАЙНЫЙ РЕЦЕПТ — РУЛЕТКА =====
+const randomPickerModal = document.getElementById('randomPickerModal');
+const randomRoller = document.getElementById('randomRoller');
+const randomResultActions = document.getElementById('randomResultActions');
+const randomOpenBtn = document.getElementById('randomOpenBtn');
+const randomAgainBtn = document.getElementById('randomAgainBtn');
+const randomCancelBtn = document.getElementById('randomCancelBtn');
+
+let randomPickedRecipe = null;
+let randomRollInterval = null;
+
+function openRandomPicker() {
+  const pool = currentView === 'recipes' ? allRecipes : allWishlist;
+  if (pool.length === 0) {
+    showToast('Нет рецептов', { type: 'info', icon: '🎲', sub: 'Добавьте хотя бы один рецепт' });
+    return;
+  }
+  randomPickerModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  rollRandom();
+}
+
+function rollRandom() {
+  const pool = currentView === 'recipes' ? allRecipes : allWishlist;
+  if (pool.length === 0) return;
+
+  randomResultActions.classList.remove('show');
+  randomRoller.classList.add('rolling');
+  randomRoller.classList.remove('result');
+  randomRoller.textContent = '🎲';
+
+  let counter = 0;
+  const totalRolls = 18 + Math.floor(Math.random() * 8);
+
+  if (randomRollInterval) clearInterval(randomRollInterval);
+
+  randomRollInterval = setInterval(() => {
+    const r = pool[Math.floor(Math.random() * pool.length)];
+    randomRoller.textContent = r.title;
+    counter++;
+
+    if (counter >= totalRolls) {
+      clearInterval(randomRollInterval);
+      randomRollInterval = null;
+
+      randomPickedRecipe = pool[Math.floor(Math.random() * pool.length)];
+      randomRoller.textContent = `🎉 ${randomPickedRecipe.title}`;
+      randomRoller.classList.remove('rolling');
+      randomRoller.classList.add('result');
+      randomResultActions.classList.add('show');
+
+      const rect = randomRoller.getBoundingClientRect();
+      launchEmojiBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, ['🎲', '🎉', '✨', '🍽️', '😋']);
+      playSuccessSound();
+    }
+  }, 75);
+}
+
+function closeRandomPicker() {
+  if (randomRollInterval) {
+    clearInterval(randomRollInterval);
+    randomRollInterval = null;
+  }
+  randomPickerModal.classList.remove('show');
+  document.body.style.overflow = '';
+  randomRoller.classList.remove('rolling', 'result');
+  randomRoller.textContent = '🎲';
+  randomResultActions.classList.remove('show');
+  randomPickedRecipe = null;
+}
+
+randomCancelBtn.addEventListener('click', closeRandomPicker);
+randomPickerModal.addEventListener('click', (e) => {
+  if (e.target === randomPickerModal) closeRandomPicker();
+});
+randomAgainBtn.addEventListener('click', rollRandom);
+randomOpenBtn.addEventListener('click', () => {
+  if (!randomPickedRecipe) return;
+  const id = randomPickedRecipe.id;
+  closeRandomPicker();
+  openRecipe(id);
+});
+
+randomBtn.addEventListener('click', openRandomPicker);
 
 // --- Фон ---
 function applyBackground() {
@@ -1823,6 +2033,8 @@ function startRealtime() {
       </div>
     `).join('');
   }
+  // Проверяем напоминания о праздниках
+setTimeout(() => checkOccasionReminders(), 1500);
 if (unsubRecipes) unsubRecipes();
 if (unsubWishlist) unsubWishlist();
 if (unsubCollections) unsubCollections();   // ← ДОБАВЛЕНО
@@ -1859,6 +2071,57 @@ unsubCollections = onSnapshot(query(collectionsCol, orderBy('createdAt', 'desc')
   console.error('Ошибка реалтайма (collections):', err);
 });
 // ↑↑↑ ДОБАВЛЕНО ↑↑↑
+}
+// ===== НАПОМИНАНИЯ О ПРАЗДНИКАХ =====
+function checkOccasionReminders() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Не показывать чаще 1 раза в день
+  const lastShown = localStorage.getItem('lastOccasionReminder');
+  const todayKey = today.toISOString().slice(0, 10);
+  if (lastShown === todayKey) return;
+
+  const reminders = [];
+
+  allRecipes.forEach(r => {
+    if (!r.occasion || !r.occasionDate) return;
+    const daysBefore = r.occasionDays != null ? r.occasionDays : 3;
+    if (daysBefore <= 0) return;
+
+    const occDate = new Date(r.occasionDate + 'T00:00:00');
+    const diffDays = Math.ceil((occDate - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 0 && diffDays <= daysBefore) {
+      reminders.push({ recipe: r, daysLeft: diffDays });
+    }
+  });
+
+  if (reminders.length === 0) return;
+
+  localStorage.setItem('lastOccasionReminder', todayKey);
+
+  // Показываем первый — самый близкий
+  reminders.sort((a, b) => a.daysLeft - b.daysLeft);
+  const first = reminders[0];
+  const { recipe, daysLeft } = first;
+
+  const dayWord = daysLeft === 0
+    ? 'сегодня!'
+    : daysLeft === 1
+      ? 'завтра!'
+      : `через ${daysLeft} ${daysLeft < 5 ? 'дня' : 'дней'}`;
+
+  const extra = reminders.length > 1
+    ? `<br><small>Ещё ${reminders.length - 1} ${reminders.length - 1 === 1 ? 'рецепт' : 'рецептов'} ждут своего часа</small>`
+    : '';
+
+  showToast(`🎂 ${recipe.occasion} — ${dayWord}`, {
+    type: 'warn',
+    icon: '📅',
+    sub: `Рецепт: «${recipe.title}»`,
+    duration: 8000
+  });
 }
 
 // --- Вкладки ---
@@ -1999,7 +2262,12 @@ const stripHtml = images.length > 1
 
 card.innerHTML = `
 <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(r.category)}</span>
-<h3>${escapeHtml(r.title)} ${badges.join(' ')}${r.cookedBy ? `<span class="cooked-by-badge">👨‍🍳 ${escapeHtml(r.cookedBy)}</span>` : ''}</h3>
+<h3>
+  ${escapeHtml(r.title)} ${badges.join(' ')}
+  ${r.cookedBy ? `<span class="cooked-by-badge">👨‍🍳 ${escapeHtml(r.cookedBy)}</span>` : ''}
+  ${r.story ? `<span class="story-icon-badge" title="${escapeHtml(r.story)}">📜</span>` : ''}
+  ${r.occasion ? `<span class="occasion-badge">🎂 ${escapeHtml(r.occasion)}</span>` : ''}
+</h3>
 ${ratingHtml}
 ${mainImg}
 ${stripHtml}
@@ -2179,6 +2447,10 @@ ingredientsInput.value = r.ingredientsShort || '';
 stepsInput.value = formatSteps(r.steps || '');
 linkInput.value = r.link || '';
 familyNoteInput.value = r.familyNote || '';
+storyInput.value = r.story || '';
+occasionInput.value = r.occasion || '';
+occasionDateInput.value = r.occasionDate || '';
+occasionDaysInput.value = r.occasionDays != null ? String(r.occasionDays) : '3';
 imageInput.value = '';
 updateIngHint();
 
@@ -2203,6 +2475,10 @@ ingredientsInput.value = '';
 stepsInput.value = '';
 linkInput.value = '';
 familyNoteInput.value = '';
+storyInput.value = '';
+occasionInput.value = '';
+occasionDateInput.value = '';
+occasionDaysInput.value = '3';
 imageInput.value = '';
 updateIngHint();
 
@@ -2224,6 +2500,10 @@ const ingredientsShort = formatIngredients(ingredientsInput.value);
 const steps = formatSteps(stepsInput.value);
 const link = linkInput.value.trim();
 const familyNote = familyNoteInput.value.trim();
+const story = storyInput.value.trim();
+const occasion = occasionInput.value.trim();
+const occasionDate = occasionDateInput.value;
+const occasionDays = parseInt(occasionDaysInput.value, 10) || 0;
 
 if (!title || !category || !steps) {
 	showToast('Заполните название, категорию и шаги', { type: 'warn' });
@@ -2248,7 +2528,10 @@ addRecipeBtn.textContent = 'Сохраняем…';
 
 if (editingId) {
 const docRef = doc(db, editingCollection, editingId);
-const updates = { title, category, ingredientsShort, steps, link, familyNote };
+const updates = {
+  title, category, ingredientsShort, steps, link, familyNote,
+  story, occasion, occasionDate, occasionDays
+};
 if (newImages !== null && newImages.length > 0) {
 updates.imagesBase64 = newImages;
 updates.imageBase64 = newImages[0] || '';
@@ -2262,6 +2545,7 @@ cancelEdit();
 const targetCol = currentView === 'wishlist' ? wishlistCol : recipesCol;
 await addDoc(targetCol, {
   title, category, ingredientsShort, steps, link, familyNote,
+  story, occasion, occasionDate, occasionDays,
   imageBase64: (newImages && newImages[0]) || '',
   imagesBase64: newImages || [],
   favorite: false, cooked: false,
@@ -2322,6 +2606,54 @@ modalGallery.appendChild(thumb);
 modalIngredients.innerHTML = ingredientsToHtml(r.ingredientsShort) || '';
 portTo.value = '';
 modalSteps.innerHTML = renderStepsHtml(r.steps);
+// История рецепта
+if (r.story) {
+  modalStory.innerHTML = `
+    <div class="story-block">
+      <span class="story-label">История рецепта</span>
+      <div class="story-text">${escapeHtml(r.story)}</div>
+    </div>
+  `;
+} else {
+  modalStory.innerHTML = '';
+}
+
+// Повод / праздник
+if (r.occasion) {
+  let countdown = '';
+  if (r.occasionDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const occDate = new Date(r.occasionDate + 'T00:00:00');
+    const diffMs = occDate - today;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      countdown = `<div class="occ-countdown">⏳ Осталось ${diffDays} ${diffDays === 1 ? 'день' : diffDays < 5 ? 'дня' : 'дней'}</div>`;
+    } else if (diffDays === 0) {
+      countdown = `<div class="occ-countdown">🎉 Сегодня!</div>`;
+    } else {
+      countdown = `<div class="occ-countdown" style="color:#888;">Уже прошло</div>`;
+    }
+  }
+
+  const dateStr = r.occasionDate
+    ? new Date(r.occasionDate + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+    : '';
+
+  modalOccasion.innerHTML = `
+    <div class="occasion-block">
+      <div class="occ-emoji">🎂</div>
+      <div class="occ-content">
+        <div class="occ-title">${escapeHtml(r.occasion)}</div>
+        ${dateStr ? `<div class="occ-date">📅 ${dateStr}</div>` : ''}
+        ${countdown}
+      </div>
+    </div>
+  `;
+} else {
+  modalOccasion.innerHTML = '';
+}
 // Семейный комментарий
 if (r.familyNote) {
   modalFamilyNote.innerHTML = `
