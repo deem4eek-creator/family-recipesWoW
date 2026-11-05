@@ -1728,3 +1728,25 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
 .share-recipe-actions .share-copy-recipe-btn:hover {
   background: #357abd;
 }
+/* ===== ВОЗВРАЩАЕМ СТАНДАРТНОЕ ПОВЕДЕНИЕ ПОЛЕЙ ВВОДА ===== */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+  touch-action: auto !important;
+}
+
+/* Также разрешаем выделение текста внутри модалки рецепта и формы */
+#recipeModal,
+#addFormCard,
+.modal-box,
+.shopping-box {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
