@@ -118,6 +118,8 @@ const editFromModalBtn = document.getElementById('editFromModalBtn');
 const favModalBtn = document.getElementById('favModalBtn');
 const cookedModalBtn = document.getElementById('cookedModalBtn');
 const ttsBtn = document.getElementById('ttsBtn');
+const shareRecipeBtn = document.getElementById('shareRecipeBtn');
+const copyRecipeBtn = document.getElementById('copyRecipeBtn');
 const cookModeBtn = document.getElementById('cookModeBtn');
 
 const portFrom = document.getElementById('portFrom');
@@ -2733,6 +2735,91 @@ function closeModal() {
   }, 250);
 }
 closeModalBtn.addEventListener('click', closeModal);
+
+// ===== ПОДЕЛИТЬСЯ РЕЦЕПТОМ =====
+function buildRecipeText() {
+  if (!currentRecipeData) return '';
+  const r = currentRecipeData;
+
+  let text = `🍽️ ${r.title}\n`;
+  if (r.category) text += `📂 ${r.category}\n`;
+  text += '\n';
+
+  if (r.ingredientsShort) {
+    text += `🥕 Ингредиенты:\n`;
+    r.ingredientsShort.split(/\n|,(?!\d)/).map(s => s.trim()).filter(Boolean)
+      .forEach(i => { text += `• ${i}\n`; });
+    text += '\n';
+  }
+
+  if (r.steps) {
+    text += `👨‍🍳 Приготовление:\n`;
+    r.steps.split('\n').map(s => s.trim()).filter(Boolean)
+      .forEach((s, i) => {
+        const clean = s.replace(/^\d+[.)]\s*/, '');
+        text += `${i + 1}. ${clean}\n`;
+      });
+    text += '\n';
+  }
+
+  if (r.familyNote) text += `💬 ${r.familyNote}\n\n`;
+  if (r.story) text += `📜 ${r.story}\n\n`;
+  if (r.link) text += `🔗 Источник: ${r.link}\n`;
+
+  text = text.trim();
+  text += '\n\n— из семейной книги рецептов 👨‍👩‍👧‍👦';
+
+  return text;
+}
+
+async function shareRecipe() {
+  const text = buildRecipeText();
+  if (!text) return;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: currentRecipeData.title || 'Рецепт',
+        text
+      });
+    } catch (e) {
+      if (e.name !== 'AbortError') console.warn('Share error:', e);
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Рецепт скопирован', { type: 'success', icon: '📋', sub: 'Вставьте в любой мессенджер' });
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Рецепт скопирован', { type: 'success', icon: '📋' }); }
+      catch (err) { showToast('Не удалось скопировать', { type: 'error' }); }
+      ta.remove();
+    }
+  }
+}
+
+async function copyRecipe() {
+  const text = buildRecipeText();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Рецепт скопирован', { type: 'success', icon: '📋', sub: 'Вставьте в чат или заметки' });
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Рецепт скопирован', { type: 'success', icon: '📋' }); }
+    catch (err) { showToast('Не удалось скопировать', { type: 'error' }); }
+    ta.remove();
+  }
+}
+
+shareRecipeBtn.addEventListener('click', shareRecipe);
+copyRecipeBtn.addEventListener('click', copyRecipe);
 document.getElementById('closeModalFloat').addEventListener('click', closeModal);
 editFromModalBtn.addEventListener('click', () => {
 if (!currentRecipeId) return;
