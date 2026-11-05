@@ -1700,3 +1700,31 @@ button { transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s 
   margin-top: 6px;
 }
 .random-actions.show { display: flex; }
+/* ===== КНОПКА ПОДЕЛИТЬСЯ РЕЦЕПТОМ ===== */
+.share-recipe-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+.share-recipe-actions button {
+  min-height: 46px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+}
+.share-recipe-actions .share-text-btn {
+  background: #25D366;
+}
+.share-recipe-actions .share-text-btn:hover {
+  background: #128C7E;
+}
+.share-recipe-actions .share-copy-recipe-btn {
+  background: #4a90e2;
+}
+.share-recipe-actions .share-copy-recipe-btn:hover {
+  background: #357abd;
+}
